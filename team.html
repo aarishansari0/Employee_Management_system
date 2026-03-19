@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teams & Projects Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0a0a0a;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .subtitle {
+      margin-bottom: 2rem;
+      color: #ccc;
+    }
+
+    .stats {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-box {
+      background: #1a1a1a;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      flex: 1;
+      text-align: center;
+    }
+
+    .stat-box span {
+      color: #aaa;
+      display: block;
+      font-size: 0.9rem;
+    }
+
+    .stat-box h2 {
+      font-size: 2rem;
+      margin-top: 0.5rem;
+    }
+
+    .section {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .teams, .projects {
+      flex: 1;
+      min-width: 400px;
+    }
+
+    .team-card {
+      background: #1a1a1a;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .members {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .member {
+      background-color: #333;
+      padding: 0.4rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 0.8rem;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+
+    th {
+      color: #ccc;
+    }
+
+    .status {
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    .status.in-progress { background-color: #2a62f3; color: white; }
+    .status.planned     { background-color: #888; color: white; }
+    .status.done        { background-color: #3cc14f; color: black; }
+    .status.blocked     { background-color: #e04a4a; color: white; }
+
+    .team-header {
+      display: flex;
+      justify-content: space-between; /* pushes button to right */
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .delete-btn {
+      background-color: #e04a4a;
+      border: none;
+      color: white;
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px; /* fully rounded corners */
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+
+    .delete-btn:hover {
+      background-color: #c03939;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Teams & Projects</h1>
+    <p class="subtitle">A clear snapshot of your HRM organization.</p>
+
+    <div class="stats">
+      <div class="stat-box"><span>Teams</span><h2 id="teamsCount">0</h2></div>
+      <div class="stat-box"><span>Members</span><h2 id="membersCount">0</h2></div>
+      <div class="stat-box"><span>Active Projects</span><h2 id="activeProjects">0</h2></div>
+    </div>
+
+    <div class="section">
+      <div class="teams">
+        <h2>Teams</h2>
+        <p>Leads, members, and project counts.</p>
+        <div id="teamList"></div>
+      </div>
+
+      <div class="projects">
+        <h2>Projects</h2>
+        <p>Status across teams with due dates.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Team</th>
+              <th>Status</th>
+              <th>Due</th>
+            </tr>
+          </thead>
+          <tbody id="projectTableBody">
+            <!-- JS inserts rows here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+  <button id="back">Back to Home</button>
+  </div>
+<script src="team.js"></script>
+</body>
+</html>

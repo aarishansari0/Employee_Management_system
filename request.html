@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Send a Request</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 1200px; /* Increased width */
+      margin: auto;
+      background-color: #111;
+      padding: 50px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #222;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 15px;
+    }
+
+    p.subtitle {
+      color: #bbb;
+      font-size: 18px;
+      margin-bottom: 35px;
+    }
+
+    label {
+      display: block;
+      margin-top: 25px;
+      margin-bottom: 8px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 16px;
+      background-color: #222;
+      border: 1px solid #333;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 120px;
+    }
+
+    .date-group {
+      display: flex;
+      gap: 30px;
+    }
+
+    .date-group input {
+      flex: 1;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #888;
+      margin-top: 6px;
+    }
+
+    button {
+      margin-top: 40px;
+      padding: 16px 28px;
+      background-color: #0a84ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #006fd6;
+    }
+
+    @media (max-width: 768px) {
+      .date-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Send a Request</h1>
+    <p class="subtitle">Submit leave, vacation, pay, or compensation requests. Fill in the details and we’ll route it to HR.</p>
+
+    <form>
+      <label for="requestType">Request type</label>
+      <select id="requestType" name="requestType">
+        <option value="leave">Leave</option>
+        <option value="sick-leave">Sick Leave</option>
+        <option value="vacation">Vacation</option>
+        <option value="compensation">Compensation</option>
+        <option value="pay-issue">Pay Issue</option>
+        <option value="other">Other</option>
+      </select>
+      <div class="note">Choose the category that best matches your request.</div>
+
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" placeholder="e.g., Paid leave for medical appointment">
+
+      <label for="details">Details</label>
+      <textarea id="details" name="details" placeholder="Provide context, dates, and any relevant information..."></textarea>
+      <div class="note">Be specific so HR can review and approve quickly.</div>
+
+      <div class="date-group">
+        <div>
+          <label for="startDate">Start date</label>
+          <input type="text" id="startDate" name="startDate" placeholder="dd-mm-yyyy">
+        </div>
+        <div>
+          <label for="endDate">End date</label>
+          <input type="text" id="endDate" name="endDate" placeholder="dd-mm-yyyy">
+        </div>
+      </div>
+
+      <button type="submit">Submit Request</button>
+      
+    </form>
+    <button id="back">Back to Home</button>
+    
+  </div>
+</body>
+<script src="request.js"></script>
+</html>
+    
