@@ -4,30 +4,45 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Teams & Projects Dashboard</title>
+
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: #0a0a0a;
       color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       padding: 2rem;
-      line-height: 1.6;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: auto;
+    .container { max-width: 1200px; margin: auto; }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
     }
 
-    .subtitle {
-      margin-bottom: 2rem;
-      color: #ccc;
+    .add-btn{
+      background: #2a62f3;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
     }
+
+    #back{
+      background: #2a62f3;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .subtitle { margin-bottom: 2rem; color: #ccc; }
 
     .stats {
       display: flex;
@@ -37,33 +52,15 @@
 
     .stat-box {
       background: #1a1a1a;
-      padding: 1rem 2rem;
+      padding: 1rem;
       border-radius: 10px;
       flex: 1;
       text-align: center;
     }
 
-    .stat-box span {
-      color: #aaa;
-      display: block;
-      font-size: 0.9rem;
-    }
+    .section { display: flex; gap: 2rem; flex-wrap: wrap; }
 
-    .stat-box h2 {
-      font-size: 2rem;
-      margin-top: 0.5rem;
-    }
-
-    .section {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .teams, .projects {
-      flex: 1;
-      min-width: 400px;
-    }
+    .teams, .projects { flex: 1; min-width: 400px; }
 
     .team-card {
       background: #1a1a1a;
@@ -72,75 +69,181 @@
       margin-bottom: 1rem;
     }
 
-    .members {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin: 0.5rem 0;
-    }
-
-    .member {
-      background-color: #333;
-      padding: 0.4rem 0.6rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
-    th, td {
-      padding: 0.8rem;
-      text-align: left;
-      border-bottom: 1px solid #333;
-    }
-
-    th {
-      color: #ccc;
-    }
-
-    .status {
-      padding: 0.3rem 0.6rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-    }
-
-    .status.in-progress { background-color: #2a62f3; color: white; }
-    .status.planned     { background-color: #888; color: white; }
-    .status.done        { background-color: #3cc14f; color: black; }
-    .status.blocked     { background-color: #e04a4a; color: white; }
-
     .team-header {
       display: flex;
-      justify-content: space-between; /* pushes button to right */
+      justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
     }
 
     .delete-btn {
-      background-color: #e04a4a;
+      background: #e04a4a;
       border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
       color: white;
-      padding: 0.4rem 0.9rem;
-      border-radius: 20px; /* fully rounded corners */
       cursor: pointer;
-      font-size: 0.8rem;
-      transition: background 0.2s ease, transform 0.1s ease;
     }
 
-    .delete-btn:hover {
-      background-color: #c03939;
-      transform: scale(1.05);
+    .members { margin: 0.5rem 0; }
+
+    .member {
+      background: #333;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      margin-right: 5px;
+      font-size: 0.8rem;
+      display: inline-block;
     }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    th, td {
+      padding: 0.8rem;
+      border-bottom: 1px solid #333;
+    }
+
+      /* Modal */
+      /* Overlay */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  /* Hidden */
+  .hidden {
+    display: none;
+  }
+
+  /* Modal box */
+  .modal-content {
+    background: #121212;
+    padding: 2rem;
+    border-radius: 16px;
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* Title */
+  .modal-content h3 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  /* Input */
+  .modal-content input {
+    padding: 0.7rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #1e1e1e;
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+  }
+
+  .modal-content input:focus {
+    border-color: #2a62f3;
+  }
+
+  /* Buttons layout */
+  .modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  /* Buttons */
+  .primary-btn {
+    flex: 1;
+    background: #2a62f3;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .primary-btn:hover {
+    background: #1d4ed8;
+  }
+
+  .secondary-btn {
+    flex: 1;
+    background: #333;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 8px;
+    color: #ccc;
+    cursor: pointer;
+  }
+
+  .secondary-btn:hover {
+    background: #444;
+  }
+
+  .member-input {
+    display: flex;
+    gap: 8px;
+  }
+
+  .member-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .member-chip {
+    background: #2a62f3;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .member-chip span {
+    cursor: pointer;
+    color: #ffb3b3;
+  }
+
+  /* Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h1>Teams & Projects</h1>
-    <p class="subtitle">A clear snapshot of your HRM organization.</p>
+
+    <div class="header">
+      <h1>Teams & Projects</h1>
+      <button class="add-btn" onclick="openAddTeamModal()">+ Add Team</button>
+    </div>
+
+    <p class="subtitle">A clear snapshot of your organization.</p>
 
     <div class="stats">
       <div class="stat-box"><span>Teams</span><h2 id="teamsCount">0</h2></div>
@@ -151,14 +254,11 @@
     <div class="section">
       <div class="teams">
         <h2>Teams</h2>
-        <p>Leads, members, and project counts.</p>
         <div id="teamList"></div>
       </div>
 
       <div class="projects">
         <h2>Projects</h2>
-        <p>Status across teams with due dates.</p>
-
         <table>
           <thead>
             <tr>
@@ -168,15 +268,37 @@
               <th>Due</th>
             </tr>
           </thead>
-          <tbody id="projectTableBody">
-            <!-- JS inserts rows here -->
-          </tbody>
+          <tbody id="projectTableBody"></tbody>
         </table>
       </div>
     </div>
-    
-  <button id="back">Back to Home</button>
+
+    <button id="back">Back</button>
   </div>
-<script src="team.js"></script>
+
+  <!-- Modal -->
+<div id="teamModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Create Team</h3>
+
+    <input type="text" id="teamNameInput" placeholder="Enter team name..." />
+
+    <!-- 👇 Add member input -->
+    <div class="member-input">
+      <input type="text" id="memberInput" placeholder="Enter username..." />
+      <button onclick="addMember()">Add</button>
+    </div>
+
+    <!-- 👇 Selected members -->
+    <div id="memberList" class="member-list"></div>
+
+    <div class="modal-actions">
+      <button class="primary-btn" onclick="createTeam()">Create</button>
+      <button class="secondary-btn" onclick="closeTeamModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+  <script src="team.js"></script>
 </body>
 </html>

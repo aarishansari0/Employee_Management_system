@@ -34,6 +34,30 @@ function authenticateToken(req, res, next) {
   });
 }
 
+app.get('/profile', authenticateToken, async (req, res) => {
+  const { id } = req.token;
+
+  const user = await User.findById(id).lean();
+
+  res.json({
+    success: true,
+    user
+  });
+});
+
+app.put('/update_profile', authenticateToken, async (req, res) => {
+  const { id } = req.token;
+  const { phone, email, bossEmail } = req.body;
+
+  await User.findByIdAndUpdate(id, {
+    phone,
+    email,
+    bossEmail
+  });
+
+  res.json({ success: true });
+});
+
 app.post('/signup', async (req, res) => {
   try {
     const { username, company_id, passkey, password } = req.body;
@@ -320,12 +344,13 @@ app.get('/team_page', authenticateToken, async (req, res) => {
     console.log("PROJECTS FOUND:", projects);
 
     const formattedTeams = teams.map(team => {
+      const members = [...new Set(team.members || [])];
 
-      const members = Array.isArray(team.members) ? team.members : [];
+      const teamMembers = [...new Set(team.members || [])]
+        .map(username => {
+          const user = users.find(u => u.username === username);
+          if (!user) return null;
 
-      const teamMembers = users
-        .filter(user => members.includes(user.username))
-        .map(user => {
           const initials = user.username
             .split(' ')
             .map(w => w[0])
@@ -337,7 +362,8 @@ app.get('/team_page', authenticateToken, async (req, res) => {
             name: user.username,
             role: user.roles?.includes('company.admin') ? 'Admin' : 'Member'
           };
-        });
+        })
+        .filter(Boolean);
 
       const projectCount = projects.filter(
         p => p.team_name === team.name
@@ -380,25 +406,36 @@ app.post('/add_team', authenticateToken, async (req, res) => {
     const { company_id, username } = req.token;
     const { name, members } = req.body;
 
-    if (!name) {
+    if (!name || name.trim() === "") {
       return res.status(400).json({
         success: false,
         error: "Team name is required"
       });
     }
 
-    // Default members to empty array if not provided
-    const teamMembers = Array.isArray(members) ? members : [];
+    // Normalize members
+    let teamMembers = Array.isArray(members) ? members : [];
 
-    // Optional: automatically include creator in team
+    // Remove duplicates
+    teamMembers = [...new Set(teamMembers)];
+
+    // Always include creator
     if (!teamMembers.includes(username)) {
       teamMembers.push(username);
     }
 
+    // Optional: validate users exist
+    const validUsers = await User.find({
+      company_id,
+      username: { $in: teamMembers }
+    });
+
+    const validUsernames = validUsers.map(u => u.username);
+
     const newTeam = await Team.create({
       company_id,
-      name,
-      members: teamMembers
+      name: name.trim(),
+      members: validUsernames
     });
 
     res.json({
@@ -408,6 +445,14 @@ app.post('/add_team', authenticateToken, async (req, res) => {
 
   } catch (err) {
     console.error("Add team error:", err);
+
+    if (err.code === 11000) {
+      return res.json({
+        success: false,
+        error: "Team already exists"
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: "Failed to create team"

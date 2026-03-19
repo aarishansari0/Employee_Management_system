@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Profile</title>
+
+  <style>
+    /* Page background (match app) */
+    body {
+    background-color: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 2rem;
+    }
+
+    /* Container */
+    .container {
+    max-width: 420px;
+    margin: auto;
+    padding: 25px;
+    background: #1a1a1a;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
+
+    /* Title */
+    h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffffff;
+    }
+
+    /* Fields */
+    .field {
+    margin-bottom: 14px;
+    }
+
+    .field label {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 4px;
+    display: block;
+    }
+
+    /* Inputs (FIXED) */
+    .field input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #222;
+    color: #fff;              /* ✅ FIX: was black */
+    font-size: 0.95rem;
+    outline: none;
+    }
+
+    /* Focus effect */
+    .field input:focus {
+    border-color: #2a62f3;
+    box-shadow: 0 0 5px rgba(42, 98, 243, 0.5);
+    }
+
+    /* Disabled fields */
+    .field input:disabled {
+    background: #2a2a2a;
+    color: #777;
+    }
+
+    /* Buttons */
+    button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-top: 10px;
+    cursor: pointer;
+    background: #2a62f3;
+    color: white;
+    font-weight: 500;
+    transition: 0.2s ease;
+    }
+
+    /* Hover */
+    button:hover {
+    background: #1d4ed8;
+    }
+
+    /* Back button style */
+    button:last-child {
+    background: #333;
+    }
+
+    button:last-child:hover {
+    background: #444;
+    }
+  </style>
+</head>
+
+<body background="black">
+<div class="container">
+
+  <h2>Profile</h2>
+
+  <div class="field">
+    <label>Name</label>
+    <input id="username" disabled>
+  </div>
+
+  <div class="field">
+    <label>Email</label>
+    <input id="email" placeholder="Enter email">
+  </div>
+
+  <div class="field">
+    <label>Phone</label>
+    <input id="phone" placeholder="Enter phone">
+  </div>
+
+  <div class="field">
+    <label>Boss Email</label>
+    <input id="bossEmail" placeholder="Enter boss email">
+  </div>
+
+  <div class="field">
+    <label>Joined At</label>
+    <input id="joinedAt" disabled>
+  </div>
+
+  <div class="field">
+    <label>Status</label>
+    <input id="status" disabled>
+  </div>
+
+  <button onclick="saveProfile()">Save</button>
+  <button onclick="goBack()">Back</button>
+
+</div>
+
+<script src="profile.js"></script>
+
+</body>
+</html>

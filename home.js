@@ -13,6 +13,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const  requestBtn=document.getElementById('request_page');
   const projectBtn=document.getElementById('project_page');
   const logoutBtn=document.getElementById('logout')
+  const profileBtn=document.getElementById('profile_page');
+
 
 
   if (taskBtn) {
@@ -55,6 +57,13 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
   
+  if (chartBtn) {
+    profileBtn.addEventListener('click', () => {
+      console.log("Navigating to: profile");
+      window.electronAPI.load_next_page('profile');
+    });
+  }
+
     if (logoutBtn){
     logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('token');

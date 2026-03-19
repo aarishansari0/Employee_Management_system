@@ -1,6 +1,130 @@
 const apiUrl = 'http://localhost:3000/team_page'; // Replace with your actual API
 const jwt= localStorage.getItem('token')
 
+// ==========================
+// ADD TEAM (FIX)
+// ==========================
+
+let selectedMembers = [];
+
+function addMember() {
+  const input = document.getElementById("memberInput");
+  const username = input.value.trim();
+
+  if (!username) return;
+
+  // prevent duplicates
+  if (selectedMembers.includes(username)) {
+    alert("Member already added");
+    return;
+  }
+
+  selectedMembers.push(username);
+  input.value = "";
+
+  renderMembers();
+}
+
+function removeMember(username) {
+  selectedMembers = selectedMembers.filter(m => m !== username);
+  renderMembers();
+}
+
+function renderMembers() {
+  const container = document.getElementById("memberList");
+  container.innerHTML = "";
+
+  selectedMembers.forEach(username => {
+    const chip = document.createElement("div");
+    chip.className = "member-chip";
+
+    chip.innerHTML = `
+      ${username}
+      <span onclick="removeMember('${username}')">✕</span>
+    `;
+
+    container.appendChild(chip);
+  });
+}
+
+async function loadUsers() {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch("http://localhost:3000/team_page", {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const data = await res.json();
+
+  const select = document.getElementById("teamMembersInput");
+  select.innerHTML = "";
+
+  const added = new Set();
+
+  data.teams.forEach(team => {
+    team.members.forEach(member => {
+      if (!added.has(member.name)) {
+        added.add(member.name);
+
+        const option = document.createElement("option");
+        option.value = member.name;
+        option.textContent = member.name;
+
+        select.appendChild(option);
+      }
+    });
+  });
+}
+
+
+function openAddTeamModal() {
+  document.getElementById("teamModal").classList.remove("hidden");
+  loadUsers(); // 🔥 importants
+}
+
+function closeTeamModal() {
+  document.getElementById("teamModal").classList.add("hidden");
+}
+
+async function createTeam() {
+  const name = document.getElementById("teamNameInput").value;
+  const token = localStorage.getItem("token");
+
+  if (!name) {
+    alert("Enter team name");
+    return;
+  }
+
+  const res = await fetch("http://localhost:3000/add_team", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      name,
+      members: selectedMembers
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    alert("Team created!");
+    selectedMembers = []; // reset
+    location.reload();
+  } else {
+    alert(data.error || "Failed");
+  }
+}
+
+document.getElementById("memberInput").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addMember();
+  }
+});
+
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('back').addEventListener('click', () => {
     console.log("Navigating back to home page");
@@ -61,9 +185,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const projects = data.projects;
 
     document.getElementById('teamsCount').textContent = teams.length;
+    const uniqueMembers = new Set();
 
-    document.getElementById('membersCount').textContent =
-      teams.reduce((acc, t) => acc + t.members.length, 0);
+    teams.forEach(team => {
+      team.members.forEach(m => uniqueMembers.add(m.name));
+    });
+
+    document.getElementById('membersCount').textContent = uniqueMembers.size;
 
     document.getElementById('activeProjects').textContent =
       projects.filter(p => p.status !== 'completed').length;
