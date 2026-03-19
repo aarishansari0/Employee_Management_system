@@ -1,0 +1,64 @@
+# Employee Management System
+
+A full-stack Employee Management System built using Node.js, Express, MongoDB, and Electron. This application helps manage employees, tasks, teams, and projects within an organization.
+
+## Features
+
+### Authentication
+- User signup and login with JWT authentication
+- Company-based access control using `company_id` and `passkey`
+
+### Task Management
+- Add, view, and delete tasks
+- Prevent overlapping tasks
+- Time tracking with start and end time
+- Weekly work summary visualization (Chart.js)
+
+### Team Management
+- Create and delete teams
+- Assign members to teams
+- View team statistics and member roles
+
+### Project Management
+- Create, update, and delete projects
+- Assign projects to teams
+- Track project status (todo, in progress, completed)
+- Visual project board with drag-like status updates
+
+### Request System
+- Submit requests (leave, vacation, compensation, etc.)
+- Includes title, details, and date range
+
+### Dashboard
+- Overview of teams, members, and active projects
+- Clean UI with dark theme
+
+### Desktop App
+- Built using Electron for desktop usage
+- Smooth navigation between pages
+
+---
+
+## Tech Stack
+
+**Frontend:**
+- HTML, CSS, JavaScript
+- Chart.js
+
+**Backend:**
+- Node.js
+- Express.js
+- MongoDB (Mongoose)
+
+**Desktop:**
+- Electron
+
+**Authentication:**
+- JWT (JSON Web Tokens)
+- bcrypt (password hashing)
+
+##Commands to use
+npm run server
+npm run start
+
+---
