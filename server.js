@@ -667,7 +667,7 @@ app.post('/add_request', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('https://hermes-ib9a.onrender.com/approve/:id', async (req, res) => {
+app.get('/approve/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
