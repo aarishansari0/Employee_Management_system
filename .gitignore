@@ -4,3 +4,4 @@ node_modules/
 renderer
 renderer.js
 test-login.js
+test.js

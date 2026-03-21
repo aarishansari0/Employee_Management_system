@@ -639,7 +639,7 @@ app.post('/add_request', authenticateToken, async (req, res) => {
       status: "pending"
     });
 
-    const approveLink = `http://hermes-ib9a.onrender.com/approve/${request._id}`;
+    const approveLink = `https://hermes-ib9a.onrender.com/approve/${request._id}`;
 
     await transporter.sendMail({
       from: process.env.EMAIL, // ✅ use env
