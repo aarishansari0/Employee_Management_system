@@ -639,7 +639,7 @@ app.post('/add_request', authenticateToken, async (req, res) => {
       status: "pending"
     });
 
-    const approveLink = `http://localhost:3000/approve/${request._id}`;
+    const approveLink = `http://hermes-ib9a.onrender.com/approve/${request._id}`;
 
     await transporter.sendMail({
       from: process.env.EMAIL, // ✅ use env
@@ -667,7 +667,7 @@ app.post('/add_request', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/approve/:id', async (req, res) => {
+app.get('https://hermes-ib9a.onrender.com/approve/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
