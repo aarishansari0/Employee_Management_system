@@ -17,11 +17,15 @@ app.use(express.json());
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.PASS
-  }
+  },
+  connectionTimeout: 10000, // 10s
+  greetingTimeout: 10000
 });
 
 mongoose.connect( mongo_url, {
@@ -641,23 +645,27 @@ app.post('/add_request', authenticateToken, async (req, res) => {
 
     const approveLink = `https://hermes-ib9a.onrender.com/approve/${request._id}`;
 
-    await transporter.sendMail({
-      from: process.env.EMAIL, // ✅ use env
-      to: user.bossEmail,
-      subject: 'Leave Request Approval',
-      html: `
-        <h2>Leave Request</h2>
-        <p><b>Employee:</b> ${username}</p>
-        <p><b>Title:</b> ${title}</p>
-        <p><b>Details:</b> ${details}</p>
-        <p><b>Dates:</b> ${startDate} → ${endDate}</p>
+    try{
+      await transporter.sendMail({
+        from: process.env.EMAIL, // ✅ use env
+        to: user.bossEmail,
+        subject: 'Leave Request Approval',
+        html: `
+          <h2>Leave Request</h2>
+          <p><b>Employee:</b> ${username}</p>
+          <p><b>Title:</b> ${title}</p>
+          <p><b>Details:</b> ${details}</p>
+          <p><b>Dates:</b> ${startDate} → ${endDate}</p>
 
-        <a href="${approveLink}" 
-          style="padding:10px 20px; background:green; color:white;">
-          Approve
-        </a>
-      `
-    });
+          <a href="${approveLink}" 
+            style="padding:10px 20px; background:green; color:white;">
+            Approve
+          </a>
+        `
+      });
+    } catch(err){
+      console.error("EMail error", err.message);
+    }
 
     res.json({ success: true });
 
