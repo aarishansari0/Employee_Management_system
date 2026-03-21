@@ -14,6 +14,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.PASS
+  }
+});
+
 mongoose.connect( mongo_url, {
   dbName: 'userdb',
 });
@@ -595,6 +605,87 @@ app.delete('/delete_project/:id', authenticateToken, async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/add_request', authenticateToken, async (req, res) => {
+  try {
+    const { username, company_id, id } = req.token;
+    const { requestType, title, details, startDate, endDate } = req.body;
+
+    // ✅ get current user
+    const user = await User.findById(id);
+
+    if (!user){
+      return res.json({success:false, error: "no user"})
+    }
+
+    if (!user || !user.bossEmail) {
+      return res.json({
+        success: false,
+        error: "Boss email not found for user"
+      });
+    }
+
+    // ✅ create request
+    const request = await Request.create({
+      company_id,
+      username,
+      requestType,
+      title,
+      details,
+      startDate,
+      endDate,
+      status: "pending"
+    });
+
+    const approveLink = `http://localhost:3000/approve/${request._id}`;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL, // ✅ use env
+      to: user.bossEmail,
+      subject: 'Leave Request Approval',
+      html: `
+        <h2>Leave Request</h2>
+        <p><b>Employee:</b> ${username}</p>
+        <p><b>Title:</b> ${title}</p>
+        <p><b>Details:</b> ${details}</p>
+        <p><b>Dates:</b> ${startDate} → ${endDate}</p>
+
+        <a href="${approveLink}" 
+          style="padding:10px 20px; background:green; color:white;">
+          Approve
+        </a>
+      `
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, error: err.message });
+  }
+});
+
+app.get('/approve/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const request = await Request.findById(id);
+    if (!request) {
+      return res.send("Request not found");
+    }
+
+    request.status = "approved";
+    await request.save();
+
+    res.send(`
+      <h2>✅ Request Approved</h2>
+      <p>${request.title} has been approved.</p>
+    `);
+
+  } catch (err) {
+    res.send("Error approving request");
   }
 });
 
