@@ -676,8 +676,41 @@ app.get('/approve/:id', async (req, res) => {
       return res.send("Request not found");
     }
 
+    // ✅ prevent double approval
+    if (request.status === "approved") {
+      return res.send("⚠️ Already approved");
+    }
+
+    // ✅ update status
     request.status = "approved";
     await request.save();
+
+    // ✅ find employee
+    const user = await User.findOne({
+      username: request.username,
+      company_id: request.company_id
+    });
+
+    if (!user || !user.email) {
+      console.log("No user email found");
+    } else {
+      // ✅ send email to employee
+      await transporter.sendMail({
+        from: process.env.EMAIL,
+        to: user.email,
+        subject: "Your Leave Request was Approved ✅",
+        html: `
+          <h2>Good news 🎉</h2>
+          <p>Your request has been approved.</p>
+
+          <p><b>Title:</b> ${request.title}</p>
+          <p><b>Details:</b> ${request.details}</p>
+          <p><b>Dates:</b> ${request.startDate} → ${request.endDate}</p>
+
+          <p>Status: <b style="color:green;">APPROVED</b></p>
+        `
+      });
+    }
 
     res.send(`
       <h2>✅ Request Approved</h2>
@@ -685,6 +718,7 @@ app.get('/approve/:id', async (req, res) => {
     `);
 
   } catch (err) {
+    console.error(err);
     res.send("Error approving request");
   }
 });
