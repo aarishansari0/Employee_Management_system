@@ -4,10 +4,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const jwt= require('jsonwebtoken');
 const cors = require('cors');
+import { Resend } from 'resend';
+
 const { Company, User, Task, Team, Project, File, Log,Request } = require('./models');
 require('dotenv').config();
 const mongo_url= process.env.mongo_url;
 const SECRET_KEY=process.env.SECRET_KEY;
+
+const resend = new Resend(process.env.resend_api);
 
 
 const app = express();
@@ -644,13 +648,13 @@ app.post('/add_request', authenticateToken, async (req, res) => {
       status: "pending"
     });
 
-    const approveLink = `https://hermes-ib9a.onrender.com/approve/${request._id}`;
+    const approveLink = `https://hermes-ib9a.onrender.com/${request._id}`;
 
     try{
-      await transporter.sendMail({
-        from: process.env.EMAIL, // ✅ use env
+      resend.emails.send({
+        from: process.env.EMAIL,
         to: user.bossEmail,
-        subject: 'Leave Request Approval',
+        subject: 'requesting from ${user.username}',
         html: `
           <h2>Leave Request</h2>
           <p><b>Employee:</b> ${username}</p>
@@ -703,22 +707,25 @@ app.get('/approve/:id', async (req, res) => {
     if (!user || !user.email) {
       console.log("No user email found");
     } else {
-      // ✅ send email to employee
-      await transporter.sendMail({
-        from: process.env.EMAIL,
-        to: user.email,
-        subject: "Your Leave Request was Approved ✅",
-        html: `
-          <h2>Good news 🎉</h2>
-          <p>Your request has been approved.</p>
+      try{
+        resend.emails.send({
+          from: process.env.EMAIL,
+          to: user.email,
+          subject: 'requesting from ${user.username}',
+          html: `
+            <h2>Good news 🎉</h2>
+            <p>Your request has been approved.</p>
 
-          <p><b>Title:</b> ${request.title}</p>
-          <p><b>Details:</b> ${request.details}</p>
-          <p><b>Dates:</b> ${request.startDate} → ${request.endDate}</p>
+            <p><b>Title:</b> ${request.title}</p>
+            <p><b>Details:</b> ${request.details}</p>
+            <p><b>Dates:</b> ${request.startDate} → ${request.endDate}</p>
 
-          <p>Status: <b style="color:green;">APPROVED</b></p>
-        `
-      });
+            <p>Status: <b style="color:green;">APPROVED</b></p>
+          `
+        });
+      } catch(err){
+        console.error("EMail error", err.message);
+      }
     }
 
     res.send(`
