@@ -651,7 +651,6 @@ app.post('/add_request', authenticateToken, async (req, res) => {
     const approveLink = `https://hermes-ib9a.onrender.com/${request._id}`;
 
     try{
-      const { Resend } = require("resend");
       (async () => {
         try {
           const response = await resend.emails.send({
