@@ -12,6 +12,7 @@ dotenv.config();
 
 const mongo_url = process.env.mongo_url;
 const SECRET_KEY = process.env.SECRET_KEY;
+const RESEND_API_KEY=process.env.RESEND_API_KEY
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -650,23 +651,21 @@ app.post('/add_request', authenticateToken, async (req, res) => {
     const approveLink = `https://hermes-ib9a.onrender.com/${request._id}`;
 
     try{
-      resend.emails.send({
-        from: process.env.EMAIL,
-        to: user.bossEmail,
-        subject: 'requesting from ${user.username}',
-        html: `
-          <h2>Leave Request</h2>
-          <p><b>Employee:</b> ${username}</p>
-          <p><b>Title:</b> ${title}</p>
-          <p><b>Details:</b> ${details}</p>
-          <p><b>Dates:</b> ${startDate} → ${endDate}</p>
+      const { Resend } = require("resend");
+      (async () => {
+        try {
+          const response = await resend.emails.send({
+            from: 'onboarding@resend.dev',
+            to: user.bossEmail,
+            subject: 'Hello World',
+            html: '<p>verify approve link ${approveLink}</p>'
+          });
 
-          <a href="${approveLink}" 
-            style="padding:10px 20px; background:green; color:white;">
-            Approve
-          </a>
-        `
-      });
+          console.log("✅ Email sent:", response);
+        } catch (err) {
+          console.error("❌ Error:", err);
+        }
+      })();
     } catch(err){
       console.error("EMail error", err.message);
     }
@@ -707,21 +706,20 @@ app.get('/approve/:id', async (req, res) => {
       console.log("No user email found");
     } else {
       try{
-        resend.emails.send({
-          from: process.env.EMAIL,
-          to: user.email,
-          subject: 'requesting from ${user.username}',
-          html: `
-            <h2>Good news 🎉</h2>
-            <p>Your request has been approved.</p>
+        (async () => {
+        try {
+          const response = await resend.emails.send({
+            from: 'onboarding@resend.dev',
+            to: user.email,
+            subject: 'Hello World',
+            html: '<p>approved</p>'
+          });
 
-            <p><b>Title:</b> ${request.title}</p>
-            <p><b>Details:</b> ${request.details}</p>
-            <p><b>Dates:</b> ${request.startDate} → ${request.endDate}</p>
-
-            <p>Status: <b style="color:green;">APPROVED</b></p>
-          `
-        });
+          console.log("✅ Email sent:", response);
+        } catch (err) {
+          console.error("❌ Error:", err);
+        }
+      })();
       } catch(err){
         console.error("EMail error", err.message);
       }
