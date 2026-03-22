@@ -1,13 +1,14 @@
 
+import express from 'express';
+import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import dotenv from 'dotenv';
 
-const express = require('express');
-const mongoose = require('mongoose');
-const jwt= require('jsonwebtoken');
-const cors = require('cors');
+dotenv.config();
 import { Resend } from 'resend';
 
 const { Company, User, Task, Team, Project, File, Log,Request } = require('./models');
-require('dotenv').config();
 const mongo_url= process.env.mongo_url;
 const SECRET_KEY=process.env.SECRET_KEY;
 
