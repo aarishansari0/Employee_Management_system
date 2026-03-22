@@ -4,22 +4,20 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
+import { Company, User, Task, Team, Project, File, Log, Request } from './models.js';
 
 dotenv.config();
-import { Resend } from 'resend';
 
-const { Company, User, Task, Team, Project, File, Log,Request } = require('./models');
-const mongo_url= process.env.mongo_url;
-const SECRET_KEY=process.env.SECRET_KEY;
+const mongo_url = process.env.mongo_url;
+const SECRET_KEY = process.env.SECRET_KEY;
 
-const resend = new Resend(process.env.resend_api);
-
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
