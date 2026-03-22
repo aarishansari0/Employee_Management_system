@@ -622,21 +622,19 @@ app.post('/add_request', authenticateToken, async (req, res) => {
     const { username, company_id, id } = req.token;
     const { requestType, title, details, startDate, endDate } = req.body;
 
-    // ✅ get current user
     const user = await User.findById(id);
 
-    if (!user){
-      return res.json({success:false, error: "no user"})
+    if (!user) {
+      return res.json({ success: false, error: "no user" });
     }
 
-    if (!user || !user.bossEmail) {
+    if (!user.bossEmail) {
       return res.json({
         success: false,
         error: "Boss email not found for user"
       });
     }
 
-    // ✅ create request
     const request = await Request.create({
       company_id,
       username,
@@ -648,28 +646,31 @@ app.post('/add_request', authenticateToken, async (req, res) => {
       status: "pending"
     });
 
-    const approveLink = `https://hermes-ib9a.onrender.com/${request._id}`;
+    // ✅ FIXED LINK
+    const approveLink = `https://hermes-ib9a.onrender.com/approve/${request._id}`;
 
-    try{
-      (async () => {
-        try {
-          const response = await resend.emails.send({
-            from: 'onboarding@resend.dev',
-            to: user.bossEmail,
-            subject: 'Hello World',
-            html: '<p>verify approve link ${approveLink}</p>'
-          });
+    // ✅ CLEAN email send
+    try {
+      const response = await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: user.bossEmail,
+        subject: 'Leave Request Approval',
+        html: `
+          <h2>Leave Request</h2>
+          <p><b>${username}</b> requested leave</p>
 
-          console.log("✅ Email sent:", response);
-        } catch (err) {
-          console.error("❌ Error:", err);
-        }
-      })();
-    } catch(err){
-      console.error("EMail error", err.message);
+          <a href="${approveLink}">
+            Approve Request
+          </a>
+        `
+      });
+
+      console.log("✅ Email sent:", response);
+    } catch (err) {
+      console.error("❌ Email error:", err);
     }
 
-    res.json({ success: true });
+    res.json({ success: true, requestId: request._id });
 
   } catch (err) {
     console.error(err);
@@ -686,41 +687,34 @@ app.get('/approve/:id', async (req, res) => {
       return res.send("Request not found");
     }
 
-    // ✅ prevent double approval
     if (request.status === "approved") {
       return res.send("⚠️ Already approved");
     }
 
-    // ✅ update status
     request.status = "approved";
     await request.save();
 
-    // ✅ find employee
     const user = await User.findOne({
       username: request.username,
       company_id: request.company_id
     });
 
-    if (!user || !user.email) {
-      console.log("No user email found");
-    } else {
-      try{
-        (async () => {
-        try {
-          const response = await resend.emails.send({
-            from: 'onboarding@resend.dev',
-            to: user.email,
-            subject: 'Hello World',
-            html: '<p>approved</p>'
-          });
+    if (user && user.email) {
+      try {
+        const response = await resend.emails.send({
+          from: 'onboarding@resend.dev',
+          to: user.email,
+          subject: 'Request Approved ✅',
+          html: `
+            <h2>Approved 🎉</h2>
+            <p>${request.title}</p>
+            <p>${request.startDate} → ${request.endDate}</p>
+          `
+        });
 
-          console.log("✅ Email sent:", response);
-        } catch (err) {
-          console.error("❌ Error:", err);
-        }
-      })();
-      } catch(err){
-        console.error("EMail error", err.message);
+        console.log("✅ Email sent:", response);
+      } catch (err) {
+        console.error("❌ Email error:", err);
       }
     }
 
