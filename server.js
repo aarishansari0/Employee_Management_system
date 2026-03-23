@@ -890,14 +890,5 @@ app.get("/admin/report", auth, async (req, res) => {
   }
 });
 
-// 🔁 helper
-function toMinutes(hour, minute, period) {
-  hour = parseInt(hour);
-  minute = parseInt(minute);
-  if (period === 'PM' && hour !== 12) hour += 12;
-  if (period === 'AM' && hour === 12) hour = 0;
-  return hour * 60 + minute;
-}
-
 app.listen(3000, () => console.log('Server running on http://localhost:3000'));
 
