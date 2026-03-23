@@ -44,7 +44,7 @@ UserSchema.pre('save', async function () {
 const TeamSchema = new Schema({
   company_id:   { type:String, required: true, index: true },
   name:        { type: String, required: true, trim: true },
-  members:     { type: [String], default: [] }
+  members:     { type: [String], default: [] },
 }, { timestamps: true });
 
 TeamSchema.index({ company_id: 1, name: 1 }, { unique: true });

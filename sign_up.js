@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
     } catch (err) {
-      console.error('Auth error:', err);
+      console.error('authentication error:', err);
       alert("Server error. Try again.");
     }
   });

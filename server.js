@@ -110,7 +110,7 @@ app.post('/signup', async (req, res) => {
     await user.save();
 
     const token = jwt.sign(
-      { username: user.username, company_id: user.company_id, id: user._id },
+      { username: user.username, company_id: user.company_id, id: user._id, role: user.role },
       SECRET_KEY
     );
 
@@ -130,7 +130,7 @@ app.post('/login', async (req, res) => {
   const match = await user.comparePassword(password);
   if (!match) return res.json({ success: false, error: 'Incorrect password' });
   const token = jwt.sign(
-    { username: user.username, company_id: user.company_id, id: user._id },
+    { username: user.username, company_id: user.company_id, id: user._id, role:user.role },
     SECRET_KEY
   );
   res.json({ success: true, token });
@@ -148,10 +148,10 @@ app.post('/add_company', async (req, res) => {
 });
 
 
-app.post("/get_data", auth, async (req, res) => {
+app.post("/get_data", authenticateToken, async (req, res) => {
   try {
     const { username, fromDate, toDate } = req.body;
-    const user = req.user;
+    const user = req.token;
 
     const query = {
       company_id: user.company_id
@@ -752,9 +752,9 @@ app.get('/approve/:id', async (req, res) => {
 
 
 
-app.post("/admin/work-trend", auth, isAdmin, async (req, res) => {
+app.post("/admin/work-trend", authenticateToken, isAdmin, async (req, res) => {
   try {
-    const company_id = req.user.company_id;
+    const company_id = req.token.company_id;
 
     const last7Days = new Date();
     last7Days.setDate(last7Days.getDate() - 7);
@@ -787,7 +787,7 @@ app.post("/admin/work-trend", auth, isAdmin, async (req, res) => {
   }
 });
 
-app.put("/change_lead", auth, async (req, res) => {
+app.put("/change_lead", authenticateToken, async (req, res) => {
   const { teamName, newLead } = req.body;
 
   await Team.updateOne(
@@ -798,32 +798,34 @@ app.put("/change_lead", auth, async (req, res) => {
   res.json({ success: true });
 });
 
-app.put("/add_member", auth, async (req, res) => {
+app.put("/add_member", authenticateToken, async (req, res) => {
   const { teamName, username } = req.body;
+  const user = await User.findOne({ username, company_id: req.token.company_id });
+  if (!user) return res.json({ success: false, error: "User not found" });
 
   await Team.updateOne(
     { name: teamName },
-    { $addToSet: { members: { name: username } } }
+    { $addToSet: { members: username } }
   );
 
   res.json({ success: true });
 });
 
-app.put("/remove_member", auth, async (req, res) => {
+app.put("/remove_member", authenticateToken, async (req, res) => {
   const { teamName, username } = req.body;
 
   await Team.updateOne(
     { name: teamName },
-    { $pull: { members: { name: username } } }
+    { $pull: { members: username  } }
   );
 
   res.json({ success: true });
 });
 
 
-app.get("/admin/report", auth, async (req, res) => {
+app.get("/admin/report", authenticateToken, async (req, res) => {
   try {
-    const company_id = req.user.company_id;
+    const company_id = req.token.company_id;
 
     const tasks = await Task.find({ company_id });
     const teams = await Team.find({ company_id });
@@ -860,9 +862,9 @@ app.get("/admin/report", auth, async (req, res) => {
     const teamSummary = teams.map(team => {
       let minutes = 0;
 
-      team.members.forEach(m => {
-        if (employeeMap[m.name]) {
-          minutes += employeeMap[m.name].minutes;
+      team.members.forEach(username => {
+        if (employeeMap[username]) {
+          minutes += employeeMap[username].minutes;
         }
       });
 
