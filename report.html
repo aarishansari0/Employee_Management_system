@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Report</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .page {
+      page-break-after: always;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+    }
+
+    button {
+      margin: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<button onclick="window.print()">Download Report</button>
+
+<!-- PAGE 1 -->
+<div class="page">
+  <h1>Company Report</h1>
+  <div id="overview"></div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page">
+  <h2>Employee Performance</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Hours</th>
+        <th>Tasks</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="employeeTable"></tbody>
+  </table>
+</div>
+
+<!-- PAGE 3 -->
+<div class="page">
+  <h2>Team Performance</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Team</th>
+        <th>Members</th>
+        <th>Total Hours</th>
+        <th>Projects</th>
+      </tr>
+    </thead>
+    <tbody id="teamTable"></tbody>
+  </table>
+</div>
+
+<script src="admin_report.js"></script>
+
+</body>
+</html>

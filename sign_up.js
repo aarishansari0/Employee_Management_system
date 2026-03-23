@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const url = 'http://localhost:3000/signup'
+    const url = 'https://hermes-ib9a.onrender.com/signup'
 
     try {
       const res = await fetch(url, {

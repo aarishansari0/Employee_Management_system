@@ -14,6 +14,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const projectBtn=document.getElementById('project_page');
   const logoutBtn=document.getElementById('logout')
   const profileBtn=document.getElementById('profile_page');
+  const adminBtn=document.getElementById('admin');
+
 
 
 
@@ -61,6 +63,13 @@ window.addEventListener('DOMContentLoaded', () => {
     profileBtn.addEventListener('click', () => {
       console.log("Navigating to: profile");
       window.electronAPI.load_next_page('profile');
+    });
+  }
+
+  if (adminBtn) {
+    adminBtn.addEventListener('click', () => {
+      console.log("Navigating to: profile");
+      window.electronAPI.load_next_page('admin');
     });
   }
 

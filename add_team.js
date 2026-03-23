@@ -5,7 +5,7 @@ document.getElementById('createTeamForm').addEventListener('submit', async (e) =
   const name = document.getElementById('teamName').value;
   const token = localStorage.getItem('token');
 
-  const response = await fetch('http://localhost:3000/add_team', {
+  const response = await fetch('https://hermes-ib9a.onrender.com/add_team', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ document.getElementById('createProjectForm').addEventListener('submit', async (e
   const progress = parseInt(document.getElementById('projectProgress').value) || 0;
   const token = localStorage.getItem('token');
 
-  const response = await fetch('http://localhost:3000/add_project', {
+  const response = await fetch('https://hermes-ib9a.onrender.com/add_project', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

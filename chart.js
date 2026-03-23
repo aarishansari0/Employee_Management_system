@@ -15,7 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function fetchChartData() {
   const title = document.getElementById('chart-title');
 
-  fetch('http://localhost:3000/task-summary', {
+  fetch('https://hermes-ib9a.onrender.com/task-summary', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json','Authorization': `Bearer ${jwt}` }
   })

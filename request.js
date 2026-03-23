@@ -1,5 +1,5 @@
 const token = localStorage.getItem('token');
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "https://hermes-ib9a.onrender.com";
 
 window.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector("form");

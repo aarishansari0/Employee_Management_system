@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home</title>
+
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Body */
+    body {
+      height: 100vh;
+      background: #0d0d0d;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #e0ffe0;
+    }
+
+    /* Container */
+    .container {
+      background: #121212;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(0, 255, 128, 0.2);
+      text-align: center;
+      width: 350px;
+    }
+
+    /* Heading */
+    #welcome-msg {
+      margin-bottom: 25px;
+      font-size: 24px;
+      color: #00ff99;
+      letter-spacing: 1px;
+    }
+
+    /* Button Group */
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Buttons */
+    button {
+      padding: 12px;
+      border: 1px solid #00ff99;
+      border-radius: 8px;
+      background: transparent;
+      color: #00ff99;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    /* Hover */
+    button:hover {
+      background: #00ff99;
+      color: #0d0d0d;
+      box-shadow: 0 0 10px #00ff99, 0 0 25px #00ff99;
+      transform: translateY(-2px);
+    }
+
+    /* Click */
+    button:active {
+      transform: scale(0.98);
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="container">
+    <h2 id="welcome-msg">Welcome</h2>
+    
+    <div class="button-group">
+      <button id="dashboard">dashboard</button>
+      <button id="employee_data">Get Data</button>
+      <button id="chart_page">View Chart</button>
+    </div>
+  </div>
+  
+  <script src="admin.js"></script>
+</body>
+</html>

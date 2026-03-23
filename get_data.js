@@ -20,7 +20,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       if (confirm("Are you sure you want to delete this task?")) {
         try {
-          const res = await fetch("http://localhost:3000/delete_task", {
+          const res = await fetch("https://hermes-ib9a.onrender.com/delete_task", {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
@@ -49,7 +49,7 @@ async function loadTasks() {
   const dataDisplay = document.getElementById('data_body');
 
   try {
-    const res = await fetch("http://localhost:3000/get_data", {
+    const res = await fetch("https://hermes-ib9a.onrender.com/get_data", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -67,9 +67,14 @@ async function loadTasks() {
         const startTime = `${String(task.startHour).padStart(2,'0')}:${String(task.startMinute).padStart(2,'0')} ${task.startPeriod}`;
         const endTime = `${String(task.endHour).padStart(2,'0')}:${String(task.endMinute).padStart(2,'0')} ${task.endPeriod}`;
 
+        const formattedDate = task.date 
+          ? new Date(task.date).toLocaleDateString() 
+          : '';
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${task.username}</td>
+          <td>${formattedDate}</td> <!-- ✅ added -->
           <td>${startTime}</td>
           <td>${endTime}</td>
           <td>${task.note || ''}</td>

@@ -1,4 +1,4 @@
-
+//--server.js
 import express from 'express';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
@@ -51,6 +51,14 @@ function authenticateToken(req, res, next) {
     req.token = decoded;
     next();
   });
+}
+
+function toMinutes(hour, minute, period) {
+  hour = parseInt(hour);
+  minute = parseInt(minute);
+  if (period === 'PM' && hour !== 12) hour += 12;
+  if (period === 'AM' && hour === 12) hour = 0;
+  return hour * 60 + minute;
 }
 
 app.get('/profile', authenticateToken, async (req, res) => {
@@ -140,19 +148,41 @@ app.post('/add_company', async (req, res) => {
 });
 
 
-app.post('/get_data', authenticateToken, async (req, res) => {
-  const { username } = req.token;
+app.post("/get_data", auth, async (req, res) => {
   try {
-    let tasks;
-    if (username === 'admin') {
-      tasks = await Task.find({});
+    const { username, fromDate, toDate } = req.body;
+    const user = req.user;
+
+    const query = {
+      company_id: user.company_id
+    };
+
+    // 🔐 ROLE CONTROL
+    if (user.role === "admin") {
+      if (username && username !== "all") {
+        query.username = username;
+      }
     } else {
-      tasks = await Task.find({ username });
+      query.username = user.username;
     }
-    res.json({ success: true, tasks });
+
+    // 📅 DATE FILTER
+    if (fromDate || toDate) {
+      query.date = {};
+      if (fromDate) query.date.$gte = new Date(fromDate);
+      if (toDate) query.date.$lte = new Date(toDate);
+    }
+
+    const tasks = await Task.find(query).sort({ date: -1 });
+
+    res.json({
+      success: true,
+      tasks
+    });
+
   } catch (err) {
-    console.error('Error fetching tasks:', err);
-    res.json({ success: false, error: 'Failed to fetch tasks' });
+    console.error("GET DATA ERROR:", err);
+    res.json({ success: false, error: err.message });
   }
 });
 
@@ -168,15 +198,6 @@ app.post('/task-summary', authenticateToken, async (req, res) => {
     username,
     date: { $gte: fromDate }
   });
-
-  // Helper: Convert 12-hour time to minutes
-  const toMinutes = (hour, minute, period) => {
-    hour = parseInt(hour);
-    minute = parseInt(minute);
-    if (period === 'PM' && hour !== 12) hour += 12;
-    if (period === 'AM' && hour === 12) hour = 0;
-    return hour * 60 + minute;
-  };
 
   const summary = {};
 
@@ -729,6 +750,154 @@ app.get('/approve/:id', async (req, res) => {
   }
 });
 
+
+
+app.post("/admin/work-trend", auth, isAdmin, async (req, res) => {
+  try {
+    const company_id = req.user.company_id;
+
+    const last7Days = new Date();
+    last7Days.setDate(last7Days.getDate() - 7);
+
+    const tasks = await Task.find({
+      company_id,
+      date: { $gte: last7Days }
+    });
+
+    const result = {};
+
+    tasks.forEach(task => {
+      const date = new Date(task.date).toISOString().split("T")[0];
+
+      // convert to minutes
+      const start = toMinutes(task.startHour, task.startMinute, task.startPeriod);
+      const end = toMinutes(task.endHour, task.endMinute, task.endPeriod);
+      const worked = end - start;
+
+      if (!result[date]) result[date] = {};
+      if (!result[date][task.username]) result[date][task.username] = 0;
+
+      result[date][task.username] += worked;
+    });
+
+    res.json({ success: true, data: result });
+
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
+app.put("/change_lead", auth, async (req, res) => {
+  const { teamName, newLead } = req.body;
+
+  await Team.updateOne(
+    { name: teamName },
+    { $set: { lead: newLead } }
+  );
+
+  res.json({ success: true });
+});
+
+app.put("/add_member", auth, async (req, res) => {
+  const { teamName, username } = req.body;
+
+  await Team.updateOne(
+    { name: teamName },
+    { $addToSet: { members: { name: username } } }
+  );
+
+  res.json({ success: true });
+});
+
+app.put("/remove_member", auth, async (req, res) => {
+  const { teamName, username } = req.body;
+
+  await Team.updateOne(
+    { name: teamName },
+    { $pull: { members: { name: username } } }
+  );
+
+  res.json({ success: true });
+});
+
+
+app.get("/admin/report", auth, async (req, res) => {
+  try {
+    const company_id = req.user.company_id;
+
+    const tasks = await Task.find({ company_id });
+    const teams = await Team.find({ company_id });
+
+    let totalMinutes = 0;
+    const employeeMap = {};
+
+    tasks.forEach(task => {
+      const start = toMinutes(task.startHour, task.startMinute, task.startPeriod);
+      const end = toMinutes(task.endHour, task.endMinute, task.endPeriod);
+      const duration = end - start;
+
+      totalMinutes += duration;
+
+      if (!employeeMap[task.username]) {
+        employeeMap[task.username] = {
+          minutes: 0,
+          tasks: 0
+        };
+      }
+
+      employeeMap[task.username].minutes += duration;
+      employeeMap[task.username].tasks += 1;
+    });
+
+    // 🧑 Employee summary
+    const employees = Object.keys(employeeMap).map(name => ({
+      username: name,
+      minutes: employeeMap[name].minutes,
+      tasks: employeeMap[name].tasks
+    }));
+
+    // 🧑‍🤝‍🧑 Team summary
+    const teamSummary = teams.map(team => {
+      let minutes = 0;
+
+      team.members.forEach(m => {
+        if (employeeMap[m.name]) {
+          minutes += employeeMap[m.name].minutes;
+        }
+      });
+
+      return {
+        name: team.name,
+        members: team.members.length,
+        minutes,
+        projects: team.projectCount || 0
+      };
+    });
+
+    res.json({
+      success: true,
+      overview: {
+        totalEmployees: employees.length,
+        totalHours: (totalMinutes / 60).toFixed(1),
+        totalTasks: tasks.length
+      },
+      employees,
+      teams: teamSummary
+    });
+
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
+// 🔁 helper
+function toMinutes(hour, minute, period) {
+  hour = parseInt(hour);
+  minute = parseInt(minute);
+  if (period === 'PM' && hour !== 12) hour += 12;
+  if (period === 'AM' && hour === 12) hour = 0;
+  return hour * 60 + minute;
+}
 
 app.listen(3000, () => console.log('Server running on http://localhost:3000'));
 

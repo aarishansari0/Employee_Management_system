@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Employee Data (Admin)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="container">
+
+  <h2>Employee Work Data (Admin)</h2>
+
+  <!-- 🔍 FILTERS -->
+  <div class="filters">
+    <select id="userFilter">
+      <option value="all">All Employees</option>
+    </select>
+
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
+
+    <button id="applyFilters">Apply</button>
+  </div>
+
+  <!-- 📊 SUMMARY -->
+  <div class="summary">
+    <div>Total Hours: <span id="totalHours">0</span></div>
+    <div>Total Tasks: <span id="totalTasks">0</span></div>
+    <div>Active Users: <span id="activeUsers">0</span></div>
+  </div>
+
+  <!-- 📋 TABLE -->
+  <table id="data_display">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Date</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Duration</th>
+        <th>Note</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody id="data_body"></tbody>
+  </table>
+
+  <button id="back">Back</button>
+
+</div>
+
+<script src="employee_data.js"></script>
+</body>
+</html>

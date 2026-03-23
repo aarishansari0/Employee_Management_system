@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       period: document.getElementById('end-period').value
     };
     console.log(jwt)
-    const res= await fetch('http://localhost:3000/add_task', {
+    const res= await fetch('https://hermes-ib9a.onrender.com/add_task', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwt}` },
       body: JSON.stringify({

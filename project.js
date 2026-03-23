@@ -1,5 +1,5 @@
 const token = localStorage.getItem('token');
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "https://hermes-ib9a.onrender.com";
 const jwt= localStorage.getItem('token')
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -41,7 +41,7 @@ document.getElementById("saveProject").addEventListener("click", async () => {
 });
 
 async function createProject(name, team, deadline) {
-  await fetch("http://localhost:3000/add_project", {
+  await fetch("https://hermes-ib9a.onrender.com/add_project", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

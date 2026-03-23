@@ -1,4 +1,4 @@
-const apiUrl = 'http://localhost:3000/team_page'; // Replace with your actual API
+const apiUrl = 'https://hermes-ib9a.onrender.com/team_page'; // Replace with your actual API
 const jwt= localStorage.getItem('token')
 
 // ==========================
@@ -50,7 +50,7 @@ function renderMembers() {
 async function loadUsers() {
   const token = localStorage.getItem("token");
 
-  const res = await fetch("http://localhost:3000/team_page", {
+  const res = await fetch("https://hermes-ib9a.onrender.com/team_page", {
     headers: { Authorization: "Bearer " + token }
   });
 
@@ -95,7 +95,7 @@ async function createTeam() {
     return;
   }
 
-  const res = await fetch("http://localhost:3000/add_team", {
+  const res = await fetch("https://hermes-ib9a.onrender.com/add_team", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -139,7 +139,7 @@ async function deleteTeam(teamName) {
 
   if (!confirm(`Delete team "${teamName}"?`)) return;
 
-  const response = await fetch('http://localhost:3000/delete_team', {
+  const response = await fetch('https://hermes-ib9a.onrender.com/delete_team', {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const response = await fetch('http://localhost:3000/team_page', {
+    const response = await fetch('https://hermes-ib9a.onrender.com/team_page', {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer ' + token
