@@ -752,7 +752,7 @@ app.get('/approve/:id', async (req, res) => {
 
 
 
-app.post("/admin/work-trend", authenticateToken, isAdmin, async (req, res) => {
+app.post("/admin/work-trend", authenticateToken, async (req, res) => {
   try {
     const company_id = req.token.company_id;
 
