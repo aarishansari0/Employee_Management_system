@@ -13,9 +13,11 @@ function toMinutes(hour, minute, period) {
 async function loadTasks() {
   const tbody = document.getElementById("data_body");
 
-  const username = document.getElementById("userFilter").value;
+  const username = document.getElementById("userFilter").value || "all";
   const fromDate = document.getElementById("fromDate").value;
   const toDate = document.getElementById("toDate").value;
+
+  console.log("FILTER:", { username, fromDate, toDate }); // 🔥 DEBUG
 
   try {
     const res = await fetch("https://hermes-ib9a.onrender.com/get_data", {
@@ -70,13 +72,16 @@ async function loadTasks() {
       tbody.appendChild(tr);
     });
 
-    // 📊 UPDATE SUMMARY
-    document.getElementById("totalHours").textContent = (totalMinutes / 60).toFixed(1) + " hrs";
+    // 📊 SUMMARY
+    document.getElementById("totalHours").textContent =
+      (totalMinutes / 60).toFixed(1) + " hrs";
+
     document.getElementById("totalTasks").textContent = data.tasks.length;
+
     document.getElementById("activeUsers").textContent = activeUsers.size;
 
   } catch (err) {
-    console.error("Error:", err);
+    console.error("Error loading tasks:", err);
   }
 }
 
@@ -92,6 +97,9 @@ async function loadUsers() {
     });
 
     const data = await res.json();
+
+    // 🔥 RESET DROPDOWN
+    select.innerHTML = `<option value="all">All Employees</option>`;
 
     const users = new Set();
 
@@ -113,43 +121,54 @@ async function loadUsers() {
 
 // 🗑 DELETE TASK
 async function deleteTask(id) {
-  const res = await fetch("https://hermes-ib9a.onrender.com/delete_task", {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + jwt
-    },
-    body: JSON.stringify({ id })
-  });
+  try {
+    const res = await fetch("https://hermes-ib9a.onrender.com/delete_task", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + jwt
+      },
+      body: JSON.stringify({ id })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (data.success) {
-    loadTasks();
-  } else {
-    alert("Delete failed");
+    if (data.success) {
+      loadTasks();
+    } else {
+      alert("Delete failed");
+    }
+
+  } catch (err) {
+    console.error("Delete error:", err);
   }
 }
 
 // 🚀 INIT
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
 
-  loadUsers();
+  // 🔥 WAIT FOR USERS FIRST
+  await loadUsers();
+
+  // THEN LOAD DATA
   loadTasks();
 
-  document.getElementById("applyFilters").addEventListener("click", loadTasks);
+  document.getElementById("applyFilters")
+    .addEventListener("click", loadTasks);
 
-  document.getElementById("back").addEventListener("click", () => {
-    window.electronAPI.load_next_page("home");
-  });
+  document.getElementById("back")
+    .addEventListener("click", () => {
+      window.electronAPI.load_next_page("home");
+    });
 
-  document.getElementById("data_body").addEventListener("click", (e) => {
-    if (e.target.classList.contains("delete-btn")) {
-      const id = e.target.getAttribute("data-id");
-      if (confirm("Delete this task?")) {
-        deleteTask(id);
+  document.getElementById("data_body")
+    .addEventListener("click", (e) => {
+      if (e.target.classList.contains("delete-btn")) {
+        const id = e.target.getAttribute("data-id");
+        if (confirm("Delete this task?")) {
+          deleteTask(id);
+        }
       }
-    }
-  });
+    });
 
 });

@@ -150,7 +150,7 @@ app.post('/add_company', async (req, res) => {
 
 app.post("/get_data", authenticateToken, async (req, res) => {
   try {
-    const { username, fromDate, toDate } = req.body;
+    const { username, fromDate, toDate } = req.body || {};
     const user = req.token;
 
     const query = {
@@ -169,8 +169,16 @@ app.post("/get_data", authenticateToken, async (req, res) => {
     // 📅 DATE FILTER
     if (fromDate || toDate) {
       query.date = {};
-      if (fromDate) query.date.$gte = new Date(fromDate);
-      if (toDate) query.date.$lte = new Date(toDate);
+
+      if (fromDate) {
+        query.date.$gte = new Date(fromDate);
+      }
+
+      if (toDate) {
+        const end = new Date(toDate);
+        end.setHours(23, 59, 59, 999); // 🔥 FIX
+        query.date.$lte = end;
+      }
     }
 
     const tasks = await Task.find(query).sort({ date: -1 });
