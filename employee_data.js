@@ -1,15 +1,23 @@
 const jwt = localStorage.getItem('token');
 
+if (!jwt) {
+  alert("No token found. Please login again.");
+}
+
 // 🔁 Convert time → minutes
 function toMinutes(hour, minute, period) {
   hour = parseInt(hour);
   minute = parseInt(minute);
+
   if (period === 'PM' && hour !== 12) hour += 12;
   if (period === 'AM' && hour === 12) hour = 0;
+
   return hour * 60 + minute;
 }
 
-// 📊 Load tasks
+// ==========================
+// LOAD TASKS (MAIN)
+// ==========================
 async function loadTasks() {
   const tbody = document.getElementById("data_body");
 
@@ -17,7 +25,9 @@ async function loadTasks() {
   const fromDate = document.getElementById("fromDate").value;
   const toDate = document.getElementById("toDate").value;
 
-  console.log("FILTER:", { username, fromDate, toDate }); // 🔥 DEBUG
+  console.log("🚀 FILTER:", { username, fromDate, toDate });
+
+  tbody.innerHTML = `<tr><td colspan="7">Loading...</td></tr>`;
 
   try {
     const res = await fetch("https://hermes-ib9a.onrender.com/get_data", {
@@ -26,17 +36,20 @@ async function loadTasks() {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + jwt
       },
-      body: JSON.stringify({
-        username,
-        fromDate,
-        toDate
-      })
+      body: JSON.stringify({ username, fromDate, toDate })
     });
 
     const data = await res.json();
 
+    console.log("📦 TASK DATA:", data);
+
     if (!data.success) {
       tbody.innerHTML = `<tr><td colspan="7">Failed to load</td></tr>`;
+      return;
+    }
+
+    if (!data.tasks || data.tasks.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7">No data found</td></tr>`;
       return;
     }
 
@@ -46,25 +59,32 @@ async function loadTasks() {
     const activeUsers = new Set();
 
     data.tasks.forEach(task => {
+      const start = toMinutes(
+        task.start?.hour,
+        task.start?.minute,
+        task.start?.period
+      );
 
-      const start = toMinutes(task.startHour, task.startMinute, task.startPeriod);
-      const end = toMinutes(task.endHour, task.endMinute, task.endPeriod);
-      const durationMin = end - start;
+      const end = toMinutes(
+        task.end?.hour,
+        task.end?.minute,
+        task.end?.period
+      );
+
+      let durationMin = end - start;
+      if (durationMin < 0) durationMin += 1440;
 
       totalMinutes += durationMin;
       activeUsers.add(task.username);
-
-      const duration = (durationMin / 60).toFixed(2) + " hrs";
-      const date = new Date(task.date).toLocaleDateString();
 
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
         <td>${task.username}</td>
-        <td>${date}</td>
-        <td>${task.startHour}:${task.startMinute} ${task.startPeriod}</td>
-        <td>${task.endHour}:${task.endMinute} ${task.endPeriod}</td>
-        <td>${duration}</td>
+        <td>${new Date(task.date).toISOString().split("T")[0]}</td>
+        <td>$${task.start?.hour}:${String(task.start?.minute).padStart(2,'0')} ${task.start?.period}</td>
+        <td>${task.end?.hour}:${String(task.end?.minute).padStart(2,'0')} ${task.end?.period}</td>
+        <td>${(durationMin / 60).toFixed(2)} hrs</td>
         <td>${task.note || ''}</td>
         <td><button class="delete-btn" data-id="${task._id}">Delete</button></td>
       `;
@@ -72,40 +92,72 @@ async function loadTasks() {
       tbody.appendChild(tr);
     });
 
-    // 📊 SUMMARY
     document.getElementById("totalHours").textContent =
       (totalMinutes / 60).toFixed(1) + " hrs";
 
-    document.getElementById("totalTasks").textContent = data.tasks.length;
+    document.getElementById("totalTasks").textContent =
+      data.tasks.length;
 
-    document.getElementById("activeUsers").textContent = activeUsers.size;
+    document.getElementById("activeUsers").textContent =
+      activeUsers.size;
 
   } catch (err) {
-    console.error("Error loading tasks:", err);
+    console.error("❌ LOAD ERROR:", err);
+    tbody.innerHTML = `<tr><td colspan="7">Server error</td></tr>`;
   }
 }
 
-// 👥 Load users into dropdown
+// ==========================
+// LOAD USERS (FIXED + FALLBACK)
+// ==========================
 async function loadUsers() {
   const select = document.getElementById("userFilter");
 
+  select.innerHTML = `<option value="all">All Employees</option>`;
+
   try {
     const res = await fetch("https://hermes-ib9a.onrender.com/team_page", {
-      headers: {
-        Authorization: "Bearer " + jwt
-      }
+      headers: { Authorization: "Bearer " + jwt }
     });
 
     const data = await res.json();
 
-    // 🔥 RESET DROPDOWN
-    select.innerHTML = `<option value="all">All Employees</option>`;
+    console.log("👥 TEAM DATA:", data);
 
     const users = new Set();
 
-    data.teams.forEach(team => {
-      team.members.forEach(m => users.add(m.name));
-    });
+    // ✅ NORMAL CASE
+    if (data.teams && data.teams.length > 0) {
+      data.teams.forEach(team => {
+        if (team.members && team.members.length > 0) {
+          team.members.forEach(m => {
+            if (m.name) users.add(m.name);
+          });
+        }
+      });
+    }
+
+    // 🚨 FALLBACK: If teams empty → extract from tasks
+    if (users.size === 0) {
+      console.warn("⚠️ No users from team API, fallback to tasks");
+
+      const res2 = await fetch("https://hermes-ib9a.onrender.com/get_data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + jwt
+        },
+        body: JSON.stringify({ username: "all" })
+      });
+
+      const data2 = await res2.json();
+
+      if (data2.tasks) {
+        data2.tasks.forEach(t => users.add(t.username));
+      }
+    }
+
+    console.log("✅ USERS:", [...users]);
 
     users.forEach(user => {
       const option = document.createElement("option");
@@ -115,11 +167,13 @@ async function loadUsers() {
     });
 
   } catch (err) {
-    console.error("User load error:", err);
+    console.error("❌ USER LOAD ERROR:", err);
   }
 }
 
-// 🗑 DELETE TASK
+// ==========================
+// DELETE TASK
+// ==========================
 async function deleteTask(id) {
   try {
     const res = await fetch("https://hermes-ib9a.onrender.com/delete_task", {
@@ -144,14 +198,15 @@ async function deleteTask(id) {
   }
 }
 
-// 🚀 INIT
+// ==========================
+// INIT
+// ==========================
 window.addEventListener("DOMContentLoaded", async () => {
 
-  // 🔥 WAIT FOR USERS FIRST
-  await loadUsers();
+  console.log("🔥 INIT START");
 
-  // THEN LOAD DATA
-  loadTasks();
+  await loadUsers();
+  await loadTasks();
 
   document.getElementById("applyFilters")
     .addEventListener("click", loadTasks);
@@ -165,6 +220,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     .addEventListener("click", (e) => {
       if (e.target.classList.contains("delete-btn")) {
         const id = e.target.getAttribute("data-id");
+
         if (confirm("Delete this task?")) {
           deleteTask(id);
         }

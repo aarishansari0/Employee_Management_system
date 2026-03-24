@@ -4,6 +4,30 @@
   <meta charset="UTF-8">
   <title>Employee Data (Admin)</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .summary {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    .delete-btn {
+      background: #b00020;
+    }
+
+    .delete-btn:hover {
+      background: #d32f2f;
+    }
+  </style>
 </head>
 
 <body>
@@ -43,7 +67,6 @@
         <th>Action</th>
       </tr>
     </thead>
-
     <tbody id="data_body"></tbody>
   </table>
 
