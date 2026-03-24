@@ -16,7 +16,7 @@ function toMinutes(hour, minute, period) {
 }
 
 // ==========================
-// LOAD TASKS (MAIN)
+// LOAD TASKS
 // ==========================
 async function loadTasks() {
   const tbody = document.getElementById("data_body");
@@ -24,8 +24,6 @@ async function loadTasks() {
   const username = document.getElementById("userFilter").value || "all";
   const fromDate = document.getElementById("fromDate").value;
   const toDate = document.getElementById("toDate").value;
-
-  console.log("🚀 FILTER:", { username, fromDate, toDate });
 
   tbody.innerHTML = `<tr><td colspan="7">Loading...</td></tr>`;
 
@@ -40,8 +38,6 @@ async function loadTasks() {
     });
 
     const data = await res.json();
-
-    console.log("📦 TASK DATA:", data);
 
     if (!data.success) {
       tbody.innerHTML = `<tr><td colspan="7">Failed to load</td></tr>`;
@@ -60,15 +56,15 @@ async function loadTasks() {
 
     data.tasks.forEach(task => {
       const start = toMinutes(
-        task.start?.hour,
-        task.start?.minute,
-        task.start?.period
+        task.startHour,
+        task.startMinute,
+        task.startPeriod
       );
 
       const end = toMinutes(
-        task.end?.hour,
-        task.end?.minute,
-        task.end?.period
+        task.endHour,
+        task.endMinute,
+        task.endPeriod
       );
 
       let durationMin = end - start;
@@ -79,11 +75,16 @@ async function loadTasks() {
 
       const tr = document.createElement("tr");
 
+      // 🔥 Highlight long work (>8h)
+      if (durationMin > 480) {
+        tr.style.background = "#2e1a1a";
+      }
+
       tr.innerHTML = `
         <td>${task.username}</td>
         <td>${new Date(task.date).toISOString().split("T")[0]}</td>
-        <td>$${task.start?.hour}:${String(task.start?.minute).padStart(2,'0')} ${task.start?.period}</td>
-        <td>${task.end?.hour}:${String(task.end?.minute).padStart(2,'0')} ${task.end?.period}</td>
+        <td>${task.startHour}:${String(task.startMinute).padStart(2,'0')} ${task.startPeriod}</td>
+        <td>${task.endHour}:${String(task.endMinute).padStart(2,'0')} ${task.endPeriod}</td>
         <td>${(durationMin / 60).toFixed(2)} hrs</td>
         <td>${task.note || ''}</td>
         <td><button class="delete-btn" data-id="${task._id}">Delete</button></td>
@@ -108,7 +109,7 @@ async function loadTasks() {
 }
 
 // ==========================
-// LOAD USERS (FIXED + FALLBACK)
+// LOAD USERS
 // ==========================
 async function loadUsers() {
   const select = document.getElementById("userFilter");
@@ -122,25 +123,18 @@ async function loadUsers() {
 
     const data = await res.json();
 
-    console.log("👥 TEAM DATA:", data);
-
     const users = new Set();
 
-    // ✅ NORMAL CASE
     if (data.teams && data.teams.length > 0) {
       data.teams.forEach(team => {
-        if (team.members && team.members.length > 0) {
-          team.members.forEach(m => {
-            if (m.name) users.add(m.name);
-          });
-        }
+        team.members?.forEach(m => {
+          if (m.name) users.add(m.name);
+        });
       });
     }
 
-    // 🚨 FALLBACK: If teams empty → extract from tasks
+    // fallback
     if (users.size === 0) {
-      console.warn("⚠️ No users from team API, fallback to tasks");
-
       const res2 = await fetch("https://hermes-ib9a.onrender.com/get_data", {
         method: "POST",
         headers: {
@@ -151,13 +145,8 @@ async function loadUsers() {
       });
 
       const data2 = await res2.json();
-
-      if (data2.tasks) {
-        data2.tasks.forEach(t => users.add(t.username));
-      }
+      data2.tasks?.forEach(t => users.add(t.username));
     }
-
-    console.log("✅ USERS:", [...users]);
 
     users.forEach(user => {
       const option = document.createElement("option");
@@ -202,8 +191,6 @@ async function deleteTask(id) {
 // INIT
 // ==========================
 window.addEventListener("DOMContentLoaded", async () => {
-
-  console.log("🔥 INIT START");
 
   await loadUsers();
   await loadTasks();

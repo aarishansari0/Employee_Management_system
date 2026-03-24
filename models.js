@@ -26,7 +26,7 @@ const UserSchema = new Schema({
   password:{ type: String, required: true},
   email: {type:String, required:false,trim:true},
   bossEmail: { type: String, trim: true },
-  roles:       { type: String, enum: ['admin','member'], default: ['member']},
+  role:       { type: String, enum: ['admin','member'], default: 'member'},
   status:      { type: String, enum: ['active','disabled','invited'], default: 'active' },
   joinedAt:     { type: Date, default: Date.now }
 }, { timestamps: true });

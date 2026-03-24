@@ -356,24 +356,26 @@ app.post('/add_task', authenticateToken, async (req, res) => {
 
 app.delete('/delete_task', authenticateToken, async (req, res) => {
   try {
-    const { username, company_id } = req.token;
-    const { id } = req.body;  // 👈 this will be the MongoDB _id
+    const { username, company_id, role } = req.token;
+    const { id } = req.body;
 
-    if (!id) {
-      return res.status(400).json({ success: false, error: "Task ID is required" });
+    let query = { _id: id, company_id };
+
+    // Only allow own deletion if not admin
+    if (role !== "admin") {
+      query.username = username;
     }
 
-    const deleted = await Task.findOneAndDelete({ _id: id});
+    const deleted = await Task.findOneAndDelete(query);
 
     if (!deleted) {
-      return res.status(404).json({ success: false, error: "Task not found or not authorized" });
+      return res.json({ success: false, error: "Not allowed or not found" });
     }
 
-    res.json({ success: true, message: "Task deleted successfully" });
+    res.json({ success: true });
 
   } catch (err) {
-    console.error("Error deleting task:", err);
-    res.status(500).json({ success: false, error: "Server error deleting task" });
+    res.json({ success: false, error: err.message });
   }
 });
 
@@ -408,7 +410,7 @@ app.get('/team_page', authenticateToken, async (req, res) => {
           return {
             initials,
             name: user.username,
-            role: user.roles?.includes('company.admin') ? 'Admin' : 'Member'
+            role: user.role?.includes('company.admin') ? 'Admin' : 'Member'
           };
         })
         .filter(Boolean);
