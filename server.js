@@ -87,7 +87,7 @@ app.put('/update_profile', authenticateToken, async (req, res) => {
 
 app.post('/signup', async (req, res) => {
   try {
-    const { username, company_id, passkey, password } = req.body;
+    const { username, company_id, passkey, password,role } = req.body;
 
     const exists = await User.findOne({ username });
     if (exists) {
@@ -106,7 +106,7 @@ app.post('/signup', async (req, res) => {
       return res.json({ success: false, error: "Wrong passkey" });
     }
 
-    const user = new User({ username, company_id, password });
+    const user = new User({ username, company_id, password, role });
     await user.save();
 
     const token = jwt.sign(

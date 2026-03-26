@@ -8,7 +8,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   const taskBtn = document.getElementById('dashboard');
   const dataBtn = document.getElementById('employee_data');
-  const chartBtn = document.getElementById('chart_page');
+  const admin_teamBtn = document.getElementById('admin_team');
 
 
 
@@ -26,10 +26,10 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (chartBtn) {
-    chartBtn.addEventListener('click', () => {
+  if (admin_teamBtn) {
+    admin_teamBtn.addEventListener('click', () => {
       console.log("Navigating to: chart");
-      window.electronAPI.load_next_page('chart');
+      window.electronAPI.load_next_page('admin_team');
     });
   }
 

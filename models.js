@@ -45,6 +45,7 @@ const TeamSchema = new Schema({
   company_id:   { type:String, required: true, index: true },
   name:        { type: String, required: true, trim: true },
   members:     { type: [String], default: [] },
+  lead: { type: String, default: null }
 }, { timestamps: true });
 
 TeamSchema.index({ company_id: 1, name: 1 }, { unique: true });

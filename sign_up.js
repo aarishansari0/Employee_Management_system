@@ -1,14 +1,38 @@
+// ==========================
+// JWT PARSER
+// ==========================
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (e) {
+    return null;
+  }
+}
 
-
+// ==========================
+// INIT
+// ==========================
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('signup-link');
+  const token = localStorage.getItem('token');
 
-  const jwt = localStorage.getItem('token');
-  if (jwt) {
-    window.electronAPI.loginSuccess();
+  // ==========================
+  // AUTO LOGIN IF TOKEN EXISTS
+  // ==========================
+  if (token) {
+    const decoded = parseJwt(token);
+
+    if (decoded?.role === "admin") {
+      window.electronAPI.load_next_page('admin');
+    } else {
+      window.electronAPI.loginSuccess();
+    }
     return;
   }
-
+ 
+  // ==========================
+  // SIGNIUP SUBMIT
+  // ==========================
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -16,41 +40,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = document.getElementById('password').value.trim();
     const company_id = document.getElementById('company_id').value.trim();
     const passkey = document.getElementById('passkey').value.trim();
+    const role = document.getElementById('role').value; // ✅ NEW
 
-    console.log(username, passkey,password,company_id)
-
-    // Basic validation
     if (!username || !password || !company_id) {
       alert("Please fill all required fields");
       return;
     }
 
-    const url = 'https://hermes-ib9a.onrender.com/signup'
-
     try {
-      const res = await fetch(url, {
+      const res = await fetch('https://hermes-ib9a.onrender.com/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, company_id, passkey, password })
+        body: JSON.stringify({ 
+          username, 
+          company_id, 
+          passkey, 
+          password,
+          role   // ✅ SEND ROLE
+        })
       });
 
       const data = await res.json();
 
-      if (data.success) {
-        if (!data.token) {
-          alert("Token missing from server");
-          return;
-        }
+      if (!data.success) {
+        alert(data.error || "Signup failed");
+        return;
+      }
 
-        localStorage.setItem('token', data.token);
-        window.electronAPI.loginSuccess();
+      localStorage.setItem('token', data.token);
+
+      const decoded = parseJwt(data.token);
+
+      if (decoded?.role === "admin") {
+        window.electronAPI.load_next_page('admin');
       } else {
-        alert(data.error || (isSignup ? 'Signup failed' : 'Login failed'));
+        window.electronAPI.loginSuccess();
       }
 
     } catch (err) {
-      console.error('authentication error:', err);
-      alert("Server error. Try again.");
+      console.error("Signup error:", err);
+      alert("Server error");
     }
-  });
-});
+  })
+})

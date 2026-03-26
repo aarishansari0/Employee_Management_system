@@ -200,7 +200,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("back")
     .addEventListener("click", () => {
-      window.electronAPI.load_next_page("home");
+      window.electronAPI.load_next_page("admin");
     });
 
   document.getElementById("data_body")

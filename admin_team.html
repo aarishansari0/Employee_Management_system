@@ -1,49 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Team Management</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Admin Team Management</title>
+<link rel="stylesheet" href="style.css">
 
-  <style>
-    .team-card {
-      border: 1px solid #444;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-    }
+<style>
 
-    .member-chip {
-      background: #2a62f3;
-      padding: 4px 8px;
-      border-radius: 16px;
-      margin: 3px;
-      display: inline-block;
-    }
+/* ===== LAYOUT ===== */
+.container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 20px;
+}
 
-    .member-chip span {
-      margin-left: 6px;
-      cursor: pointer;
-      color: #ffb3b3;
-    }
+.left-panel {
+  flex: 2;
+}
 
-    .member-input {
-      margin-top: 10px;
-    }
-  </style>
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* ===== TEAM CARD ===== */
+.team-card {
+  border: 1px solid #444;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  background: #1a1a1a;
+}
+
+/* 🔥 TEAM NAME HIGHLIGHT */
+.team-card h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #2a62f3, #4da3ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== MEMBER CHIP ===== */
+.member-chip {
+  background: #2a62f3;
+  padding: 5px 10px;
+  border-radius: 20px;
+  margin: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.member-chip span {
+  cursor: pointer;
+  color: #ffb3b3;
+}
+
+/* ===== INPUTS ===== */
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #222;
+  color: white;
+}
+
+/* ===== BUTTONS ===== */
+button {
+  margin-top: 8px;
+}
+
+/* ===== MODAL ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #1a1a1a;
+  padding: 25px;
+  border-radius: 12px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+</style>
 </head>
 
 <body>
+
 <div class="container">
 
-  <h2>Admin Team Management</h2>
+  <!-- LEFT SIDE -->
+  <div class="left-panel">
 
-  <div id="teamList"></div>
+    <div class="header">
+      <h1>Team Management (Admin)</h1>
+      <button onclick="openAddTeamModal()">+ Create Team</button>
+    </div>
 
+    <div id="teamList"></div>
   <button id="back">Back</button>
+
+  </div>
 
 </div>
 
+
+
+<!-- ===== CREATE TEAM MODAL ===== -->
+<div id="teamModal" class="modal hidden">
+  <div class="modal-content">
+
+    <h3>Create Team</h3>
+
+    <input id="teamNameInput" placeholder="Team Name">
+
+    <input id="memberInput" placeholder="Add username...">
+    <button onclick="addMember()">Add</button>
+
+    <div id="memberList"></div>
+
+    <button onclick="createTeam()">Create</button>
+    <button onclick="closeTeamModal()">Cancel</button>
+  </div>
+  
+</div>
+
 <script src="admin_team.js"></script>
+
 </body>
 </html>

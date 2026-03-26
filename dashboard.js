@@ -68,3 +68,11 @@ async function loadChart() {
 }
 
 window.addEventListener("DOMContentLoaded", loadChart);
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  document.getElementById("back")
+    .addEventListener("click", () => {
+      window.electronAPI.load_next_page("admin");
+    });
+});
