@@ -9,6 +9,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const taskBtn = document.getElementById('dashboard');
   const dataBtn = document.getElementById('employee_data');
   const admin_teamBtn = document.getElementById('admin_team');
+  const admin_logsBtn = document.getElementById('admin_logs');
+
+
+  const logoutBtn = document.getElementById('logout');
+
 
 
 
@@ -28,8 +33,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
   if (admin_teamBtn) {
     admin_teamBtn.addEventListener('click', () => {
-      console.log("Navigating to: chart");
+      console.log("Navigating to: team");
       window.electronAPI.load_next_page('admin_team');
+    });
+  }
+
+  if (admin_logsBtn) {
+    admin_logsBtn.addEventListener('click', () => {
+      console.log("Navigating to: logs");
+      window.electronAPI.load_next_page('admin_logs');
+    });
+  }
+
+  if (logoutBtn){
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.electronAPI.load_next_page('index');
     });
   }
 

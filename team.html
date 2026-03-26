@@ -240,7 +240,6 @@
 
     <div class="header">
       <h1>Teams & Projects</h1>
-      <button class="add-btn" onclick="openAddTeamModal()">+ Add Team</button>
     </div>
 
     <p class="subtitle">A clear snapshot of your organization.</p>
@@ -276,28 +275,6 @@
     <button id="back">Back</button>
   </div>
 
-  <!-- Modal -->
-<div id="teamModal" class="modal hidden">
-  <div class="modal-content">
-    <h3>Create Team</h3>
-
-    <input type="text" id="teamNameInput" placeholder="Enter team name..." />
-
-    <!-- 👇 Add member input -->
-    <div class="member-input">
-      <input type="text" id="memberInput" placeholder="Enter username..." />
-      <button onclick="addMember()">Add</button>
-    </div>
-
-    <!-- 👇 Selected members -->
-    <div id="memberList" class="member-list"></div>
-
-    <div class="modal-actions">
-      <button class="primary-btn" onclick="createTeam()">Create</button>
-      <button class="secondary-btn" onclick="closeTeamModal()">Cancel</button>
-    </div>
-  </div>
-</div>
 
   <script src="team.js"></script>
 </body>

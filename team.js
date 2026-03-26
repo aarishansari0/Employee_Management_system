@@ -7,45 +7,6 @@ const jwt= localStorage.getItem('token')
 
 let selectedMembers = [];
 
-function addMember() {
-  const input = document.getElementById("memberInput");
-  const username = input.value.trim();
-
-  if (!username) return;
-
-  // prevent duplicates
-  if (selectedMembers.includes(username)) {
-    alert("Member already added");
-    return;
-  }
-
-  selectedMembers.push(username);
-  input.value = "";
-
-  renderMembers();
-}
-
-function removeMember(username) {
-  selectedMembers = selectedMembers.filter(m => m !== username);
-  renderMembers();
-}
-
-function renderMembers() {
-  const container = document.getElementById("memberList");
-  container.innerHTML = "";
-
-  selectedMembers.forEach(username => {
-    const chip = document.createElement("div");
-    chip.className = "member-chip";
-
-    chip.innerHTML = `
-      ${username}
-      <span onclick="removeMember('${username}')">✕</span>
-    `;
-
-    container.appendChild(chip);
-  });
-}
 
 async function loadUsers() {
   const token = localStorage.getItem("token");
@@ -77,85 +38,14 @@ async function loadUsers() {
 }
 
 
-function openAddTeamModal() {
-  document.getElementById("teamModal").classList.remove("hidden");
-  loadUsers(); // 🔥 importants
-}
 
-function closeTeamModal() {
-  document.getElementById("teamModal").classList.add("hidden");
-}
-
-async function createTeam() {
-  const name = document.getElementById("teamNameInput").value;
-  const token = localStorage.getItem("token");
-
-  if (!name) {
-    alert("Enter team name");
-    return;
-  }
-
-  const res = await fetch("https://hermes-ib9a.onrender.com/add_team", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + token
-    },
-    body: JSON.stringify({
-      name,
-      members: selectedMembers
-    })
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    alert("Team created!");
-    selectedMembers = []; // reset
-    location.reload();
-  } else {
-    alert(data.error || "Failed");
-  }
-}
-
-document.getElementById("memberInput").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    addMember();
-  }
-});
 
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('back').addEventListener('click', () => {
     console.log("Navigating back to home page");
     window.electronAPI.load_next_page('home');
   });
-  while(!jwt){}
-  fetchChartData();
 });
-
-async function deleteTeam(teamName) {
-  const token = localStorage.getItem('token');
-
-  if (!confirm(`Delete team "${teamName}"?`)) return;
-
-  const response = await fetch('https://hermes-ib9a.onrender.com/delete_team', {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token
-    },
-    body: JSON.stringify({ teamName })
-  });
-
-  const data = await response.json();
-
-  if (data.success) {
-    location.reload();
-  } else {
-    alert(data.error || "Failed to delete");
-  }
-}
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -206,9 +96,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         teamCard.innerHTML = `
         <div class="team-header">
             <h3>${team.name}</h3>
-            <button class="delete-btn" onclick="deleteTeam('${team.name}')">
-            Delete
-            </button>
         </div>
 
         <p><strong>Lead:</strong> ${team.lead}</p>

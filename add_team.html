@@ -1,13 +1,91 @@
-<h2>Create Team</h2>
-<form id="createTeamForm">
-  <input type="text" id="teamName" placeholder="Team Name" required />
-  <button type="submit">Create Team</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Logs</title>
+  <link rel="stylesheet" href="style.css">
 
-<h2>Create Project</h2>
-<form id="createProjectForm">
-  <input type="text" id="projectName" placeholder="Project Name" required />
-  <input type="text" id="projectTeam" placeholder="Team Name" required />
-  <input type="number" id="projectProgress" placeholder="Progress %" min="0" max="100" />
-  <button type="submit">Create Project</button>
-</form>
+  <style>
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .log-create { color: #4caf50; }
+    .log-update { color: #2196f3; }
+    .log-delete { color: #f44336; }
+    .log-login  { color: #ff9800; }
+    .log-upload { color: #9c27b0; }
+
+    .log-box {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #1e1e1e;
+      border-left: 4px solid #444;
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+
+    .log-user {
+      font-weight: bold;
+    }
+
+    .log-action {
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .log-message {
+      color: #ccc;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+
+  <h2>System Logs (Admin)</h2>
+
+  <!-- 🔍 FILTERS -->
+  <div class="filters">
+    <input type="text" id="userFilter" placeholder="Filter by username">
+    
+    <select id="actionFilter">
+      <option value="all">All Actions</option>
+      <option value="create">Create</option>
+      <option value="update">Update</option>
+      <option value="delete">Delete</option>
+      <option value="login">Login</option>
+      <option value="upload">Upload</option>
+    </select>
+
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
+
+    <button id="applyFilters">Apply</button>
+  </div>
+
+  <!-- 📋 LOGS -->
+  <div id="logContainer"></div>
+
+  <button id="back">Back</button>
+
+</div>
+
+<script src="admin_logs.js"></script>
+</body>
+</html>

@@ -114,6 +114,13 @@ app.post('/signup', async (req, res) => {
       SECRET_KEY
     );
 
+    await Log.create({
+      company_id: user.company_id,
+      username: user.username,
+      action: "Signup",
+      message: "User signup in"
+    });
+
     res.json({ success: true, token });
 
   } catch (err) {
@@ -133,6 +140,13 @@ app.post('/login', async (req, res) => {
     { username: user.username, company_id: user.company_id, id: user._id, role:user.role },
     SECRET_KEY
   );
+
+  await Log.create({
+    company_id: user.company_id,
+    username: user.username,
+    action: "login",
+    message: "User logged in"
+  });
   res.json({ success: true, token });
 });
 
@@ -341,6 +355,13 @@ app.post('/add_task', authenticateToken, async (req, res) => {
 
     console.log('Task saved:', task_data);
 
+    await Log.create({
+      company_id,
+      username,
+      action: "create",
+      message: `Task added: ${note}`
+    });
+
     res.json({ success: true });
 
   } catch (err) {
@@ -371,6 +392,13 @@ app.delete('/delete_task', authenticateToken, async (req, res) => {
     if (!deleted) {
       return res.json({ success: false, error: "Not allowed or not found" });
     }
+
+    await Log.create({
+      company_id,
+      username,
+      action: "delete",
+      message: `Deleted task ${id}`
+    });
 
     res.json({ success: true });
 
@@ -896,6 +924,23 @@ app.get("/admin/report", authenticateToken, async (req, res) => {
       employees,
       teams: teamSummary
     });
+
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
+app.get("/admin/logs", authenticateToken, async (req, res) => {
+  try {
+    if (req.token.role !== "admin") {
+      return res.status(403).json({ success: false, error: "Access denied" });
+    }
+
+    const logs = await Log.find({
+      company_id: req.token.company_id
+    }).sort({ time: -1 }).limit(100);
+
+    res.json({ success: true, logs });
 
   } catch (err) {
     res.json({ success: false, error: err.message });
