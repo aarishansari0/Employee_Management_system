@@ -1,11 +1,174 @@
-<table>
-  <thead>
-    <tr>
-      <th>User</th>
-      <th>Action</th>
-      <th>Message</th>
-      <th>Time</th>
-    </tr>
-  </thead>
-  <tbody id="logs"></tbody>
-</table>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Logs</title>
+
+<style>
+/* ===== GLOBAL ===== */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0d0d0d;
+  color: #00ff99;
+  padding: 20px;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+  max-width: 1000px;
+  margin: auto;
+  background: #121212;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 25px rgba(0,255,128,0.15);
+}
+
+/* ===== HEADER ===== */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #00ff99;
+}
+
+/* ===== FILTERS ===== */
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+input, select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: #00ff99;
+}
+
+input::placeholder {
+  color: #666;
+}
+
+/* ===== BUTTON ===== */
+button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #00ff99;
+  background: transparent;
+  color: #00ff99;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #00ff99;
+  color: #0d0d0d;
+  box-shadow: 0 0 10px #00ff99;
+}
+
+/* ===== TABLE ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+thead {
+  background: #1f1f1f;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #222;
+}
+
+th {
+  color: #00ff99;
+}
+
+tr:hover {
+  background: #1a1a1a;
+}
+
+/* ===== ACTION COLORS ===== */
+.log-create {
+  color: #00ff99;
+}
+
+.log-update {
+  color: #00ccff;
+}
+
+.log-delete {
+  color: #ff4d4d;
+}
+
+.log-login {
+  color: #ffaa00;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty {
+  text-align: center;
+  padding: 20px;
+  color: #777;
+}
+
+/* ===== BACK BUTTON ===== */
+.back-btn {
+  margin-top: 20px;
+  width: 100%;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Admin Logs</h1>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <input type="text" id="userFilter" placeholder="Search user...">
+
+    <select id="actionFilter">
+      <option value="all">All Actions</option>
+      <option value="create">Create</option>
+      <option value="update">Update</option>
+      <option value="delete">Delete</option>
+      <option value="login">Login</option>
+    </select>
+
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
+
+    <button id="applyFilters">Apply</button>
+  </div>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Action</th>
+        <th>Message</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="logs">
+      <tr>
+        <td colspan="4" class="empty">Loading logs...</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button id="back" class="back-btn">Back</button>
+</div>
+
+<script src="admin_logs.js"></script>
+</body>
+</html>

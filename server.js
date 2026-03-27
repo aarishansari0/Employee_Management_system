@@ -20,6 +20,41 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+import Mailjet from 'node-mailjet';
+
+const mailjet = Mailjet.apiConnect(
+  process.env.MJ_APIKEY_PUBLIC,
+  process.env.MJ_APIKEY_PRIVATE
+);
+
+async function sendEmail({ to, subject, html }) {
+  try {
+    const result = await mailjet
+      .post("send", { version: "v3.1" })
+      .request({
+        Messages: [
+          {
+            From: {
+              Email: process.env.MAIL_FROM_EMAIL, // important
+              Name: "Employee System"
+            },
+            To: [
+              {
+                Email: to
+              }
+            ],
+            Subject: subject,
+            HTMLPart: html
+          }
+        ]
+      });
+
+    console.log("✅ Email sent:", result.body);
+  } catch (err) {
+    console.error("❌ Email error:", err.statusCode, err.message);
+  }
+}
+
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
@@ -705,29 +740,23 @@ app.post('/add_request', authenticateToken, async (req, res) => {
       status: "pending"
     });
 
-    // ✅ FIXED LINK
     const approveLink = `https://hermes-ib9a.onrender.com/approve/${request._id}`;
+    const rejectLink = `https://hermes-ib9a.onrender.com/reject/${request._id}`;
 
-    // ✅ CLEAN email send
-    try {
-      const response = await resend.emails.send({
-        from: 'onboarding@resend.dev',
-        to: user.bossEmail,
-        subject: 'Leave Request Approval',
-        html: `
-          <h2>Leave Request</h2>
-          <p><b>${username}</b> requested leave</p>
 
-          <a href="${approveLink}">
-            Approve Request
-          </a>
-        `
-      });
-
-      console.log("✅ Email sent:", response);
-    } catch (err) {
-      console.error("❌ Email error:", err);
-    }
+    // ✅ NEW MAILJET CALL (via abstraction)
+    await sendEmail({
+      to: user.bossEmail,
+      subject: 'Leave Request Approval',
+      html: `
+        <h2>Leave Request</h2>
+        <p><b>${username}</b> requested leave</p>
+        <p>${request.title}</p>
+        <p>${request.startDate} → ${request.endDate}</p>
+        <a href="${approveLink}">Approve Request</a>
+        <a href="${rejectLink}">reject Request</a>
+      `
+    });
 
     res.json({ success: true, requestId: request._id });
 
@@ -759,22 +788,16 @@ app.get('/approve/:id', async (req, res) => {
     });
 
     if (user && user.email) {
-      try {
-        const response = await resend.emails.send({
-          from: 'onboarding@resend.dev',
-          to: user.email,
-          subject: 'Request Approved ✅',
-          html: `
-            <h2>Approved 🎉</h2>
-            <p>${request.title}</p>
-            <p>${request.startDate} → ${request.endDate}</p>
-          `
-        });
-
-        console.log("✅ Email sent:", response);
-      } catch (err) {
-        console.error("❌ Email error:", err);
-      }
+      // ✅ NEW MAILJET CALL
+      await sendEmail({
+        to: user.email,
+        subject: 'Request Approved ✅',
+        html: `
+          <h2>Approved 🎉</h2>
+          <p>${request.title}</p>
+          <p>${request.startDate} → ${request.endDate}</p>
+        `
+      });
     }
 
     res.send(`
@@ -788,6 +811,53 @@ app.get('/approve/:id', async (req, res) => {
   }
 });
 
+app.get('/reject/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const request = await Request.findById(id);
+    if (!request) {
+      return res.send("Request not found");
+    }
+
+    if (request.status === "rejected") {
+      return res.send("⚠️ Already rejected");
+    }
+
+    if (request.status === "approved") {
+      return res.send("⚠️ Already approved");
+    }
+
+    request.status = "rejected";
+    await request.save();
+
+    const user = await User.findOne({
+      username: request.username,
+      company_id: request.company_id
+    });
+
+    if (user && user.email) {
+      await sendEmail({
+        to: user.email,
+        subject: 'Request Rejected ❌',
+        html: `
+          <h2>Rejected ❌</h2>
+          <p>${request.title}</p>
+          <p>${request.startDate} → ${request.endDate}</p>
+        `
+      });
+    }
+
+    res.send(`
+      <h2>❌ Request Rejected</h2>
+      <p>${request.title} has been rejected.</p>
+    `);
+
+  } catch (err) {
+    console.error(err);
+    res.send("Error rejecting request");
+  }
+});
 
 
 app.post("/admin/work-trend", authenticateToken, async (req, res) => {

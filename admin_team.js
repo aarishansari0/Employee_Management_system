@@ -28,24 +28,20 @@ async function loadTeams() {
         ${team.members.map(m => `
           <span class="member">
             ${m.name}
-            <button onclick="removeMemberFromTeam('${team.name}', '${m.name}')">❌</button>
+            <button onclick="removeMemberFromTeam('${team.name}', '${m.name}')">✕</button>
           </span>
         `).join("")}
       </div>
 
-      <br>
-
       <input placeholder="Add member..." id="add-${team.name}">
       <button onclick="addMemberToTeam('${team.name}')">Add</button>
-
-      <br><br>
 
       <input placeholder="New lead username" id="lead-${team.name}">
       <button onclick="changeLead('${team.name}')">Change Lead</button>
 
-      <br><br>
-
-      <button onclick="deleteTeam('${team.name}')" style="background:red">Delete Team</button>
+      <button onclick="deleteTeam('${team.name}')" style="border-color:red;color:red">
+        Delete Team
+      </button>
     `;
 
     container.appendChild(div);

@@ -3,14 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dashboard</title>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-</head>
-<body>
-    <canvas id="workTrendChart"></canvas>
-  <button id="back">Back</button>
+    <style>
+        /* ===== BODY ===== */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #0d0d0d;
+            color: #00ff99;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-  <script src="dashboard.js"></script>
+        /* ===== CONTAINER ===== */
+        .container {
+            background: #121212;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(0, 255, 128, 0.2);
+            text-align: center;
+            width: 800px;
+        }
+
+        /* ===== BUTTON ===== */
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: 1px solid #00ff99;
+            border-radius: 8px;
+            background: transparent;
+            color: #00ff99;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #00ff99;
+            color: #0d0d0d;
+            box-shadow: 0 0 10px #00ff99, 0 0 20px #00ff99;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+    </style>
+</head>
+
+<body>
+      <canvas id="workTrendChart"></canvas><br>
+      <button id="back">Back</button>
+
+    <script src="dashboard.js"></script>
 </body>
 </html>

@@ -9,14 +9,18 @@ if (!token) {
 // LOAD LOGS
 // ==========================
 async function loadLogs() {
-  const container = document.getElementById("logContainer");
+  const tbody = document.getElementById("logs");
 
   const userFilter = document.getElementById("userFilter").value.trim().toLowerCase();
   const actionFilter = document.getElementById("actionFilter").value;
   const fromDate = document.getElementById("fromDate").value;
   const toDate = document.getElementById("toDate").value;
 
-  container.innerHTML = `<div class="empty">Loading logs...</div>`;
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="4" class="empty">Loading logs...</td>
+    </tr>
+  `;
 
   try {
     const res = await fetch(`${BASE_URL}/admin/logs`, {
@@ -25,10 +29,18 @@ async function loadLogs() {
       }
     });
 
+    if (!res.ok) {
+      throw new Error("Failed request");
+    }
+
     const data = await res.json();
 
-    if (!data.success) {
-      container.innerHTML = `<div class="empty">Failed to load logs</div>`;
+    if (!data.success || !data.logs) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="empty">Failed to load logs</td>
+        </tr>
+      `;
       return;
     }
 
@@ -37,27 +49,25 @@ async function loadLogs() {
     // ==========================
     // FILTERING
     // ==========================
-
     logs = logs.filter(log => {
 
-      // user filter
+      if (!log.username || !log.time) return false;
+
       if (userFilter && !log.username.toLowerCase().includes(userFilter)) {
         return false;
       }
 
-      // action filter
       if (actionFilter !== "all" && log.action !== actionFilter) {
         return false;
       }
 
-      // date filter
       const logDate = new Date(log.time);
 
       if (fromDate && logDate < new Date(fromDate)) return false;
 
       if (toDate) {
         const end = new Date(toDate);
-        end.setHours(23,59,59,999);
+        end.setHours(23, 59, 59, 999);
         if (logDate > end) return false;
       }
 
@@ -67,37 +77,40 @@ async function loadLogs() {
     // ==========================
     // RENDER
     // ==========================
-
     if (logs.length === 0) {
-      container.innerHTML = `<div class="empty">No logs found</div>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="empty">No logs found</td>
+        </tr>
+      `;
       return;
     }
 
-    container.innerHTML = "";
+    tbody.innerHTML = "";
 
     logs.forEach(log => {
-      const div = document.createElement("div");
-      div.className = "log-box";
+      const tr = document.createElement("tr");
 
-      div.innerHTML = `
-        <div class="log-header">
-          <span class="log-user">${log.username}</span>
-          <span class="log-action log-${log.action}">${log.action}</span>
-        </div>
-
-        <div class="log-message">${log.message || "-"}</div>
-
-        <div class="log-time">
-          ${new Date(log.time).toLocaleString()}
-        </div>
+      tr.innerHTML = `
+        <td>${log.username}</td>
+        <td class="log-${log.action || "unknown"}">
+          ${log.action || "unknown"}
+        </td>
+        <td>${log.message || "-"}</td>
+        <td>${new Date(log.time).toLocaleString()}</td>
       `;
 
-      container.appendChild(div);
+      tbody.appendChild(tr);
     });
 
   } catch (err) {
     console.error("Log fetch error:", err);
-    container.innerHTML = `<div class="empty">Server error</div>`;
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="empty">Server error</td>
+      </tr>
+    `;
   }
 }
 
@@ -115,5 +128,4 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => {
       window.electronAPI.load_next_page("admin");
     });
-
 });

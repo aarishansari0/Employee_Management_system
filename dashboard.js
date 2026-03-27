@@ -14,7 +14,7 @@ async function loadChart() {
 
   const raw = data.data;
 
-  const dates = Object.keys(raw).sort();
+  const dates = Object.keys(raw). sort();
 
   // get all employees
   const employees = new Set();
@@ -46,20 +46,44 @@ async function loadChart() {
     },
     options: {
       plugins: {
-        legend: { display: true }
+        legend: {
+          labels: {
+            color: "#00ff99"
+          }
+        }
       },
       scales: {
         y: {
           beginAtZero: true,
+
+          ticks: {
+            color: "#00ff99"   // 🔥 Y-axis numbers
+          },
+
+          grid: {
+            color: "rgba(0,255,153,0.1)" // 🔥 subtle green grid
+          },
+
           title: {
             display: true,
-            text: "Minutes Worked"
+            text: "Minutes Worked",
+            color: "#00ff99" // 🔥 Y-axis title
           }
         },
+
         x: {
+          ticks: {
+            color: "#00ff99"  // 🔥 X-axis labels
+          },
+
+          grid: {
+            color: "rgba(0,255,153,0.05)"
+          },
+
           title: {
             display: true,
-            text: "Date"
+            text: "Date",
+            color: "#00ff99" // 🔥 X-axis title
           }
         }
       }
