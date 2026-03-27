@@ -35,7 +35,7 @@ async function sendEmail({ to, subject, html }) {
         Messages: [
           {
             From: {
-              Email: process.env.MAIL_FROM_EMAIL, // important
+              Email: process.env.EMAIL, // important
               Name: "Employee System"
             },
             To: [
