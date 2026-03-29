@@ -291,10 +291,7 @@ app.post('/add_task', authenticateToken, async (req, res) => {
   const { start, end, note, date } = req.body;
   const { username, company_id } = req.token;
 
-  console.log(`Adding task for user: ${username}`);
-
-  // Convert 12-hour time to minutes since midnight
-  const to_24_minutes = (hour, minute, period) => {
+  const toMinutes = (hour, minute, period) => {
     hour = parseInt(hour);
     minute = parseInt(minute);
 
@@ -304,9 +301,10 @@ app.post('/add_task', authenticateToken, async (req, res) => {
     return hour * 60 + minute;
   };
 
-  const start_total = to_24_minutes(start.hour, start.minute, start.period);
-  const end_total = to_24_minutes(end.hour, end.minute, end.period);
+  const start_total = toMinutes(start.hour, start.minute, start.period);
+  const end_total = toMinutes(end.hour, end.minute, end.period);
 
+  // ❌ End must be after start
   if (end_total <= start_total) {
     return res.json({
       success: false,
@@ -314,53 +312,98 @@ app.post('/add_task', authenticateToken, async (req, res) => {
     });
   }
 
+  // ⏱️ Duration validation
+  const duration = end_total - start_total;
+
+  if (duration < 5) {
+    return res.json({
+      success: false,
+      error: "Task must be at least 5 minutes"
+    });
+  }
+
+  if (duration > 12 * 60) {
+    return res.json({
+      success: false,
+      error: "Task cannot exceed 12 hours"
+    });
+  }
+
   try {
-    // Normalize date to day boundaries
     const task_date = new Date(date);
+    const today = new Date();
+
     task_date.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
 
     const next_day = new Date(task_date);
     next_day.setDate(task_date.getDate() + 1);
 
+    // ❌ Future date block
+    if (task_date > today) {
+      return res.json({
+        success: false,
+        error: "Task date cannot be in the future"
+      });
+    }
+
+    // ❌ Future time (today)
+    if (task_date.getTime() === today.getTime()) {
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      if (end_total > currentMinutes) {
+        return res.json({
+          success: false,
+          error: "Cannot log future time today"
+        });
+      }
+    }
+
     const existing_tasks = await Task.find({
       username,
-      date: {
-        $gte: task_date,
-        $lt: next_day
-      }
+      date: { $gte: task_date, $lt: next_day }
     });
 
-    const BUFFER = 0; // minutes
+    // ❌ Duplicate prevention
+    const duplicate = existing_tasks.find(t =>
+      t.totalStart === start_total && t.totalEnd === end_total
+    );
 
+    if (duplicate) {
+      return res.json({
+        success: false,
+        error: "Duplicate task already exists"
+      });
+    }
+
+    totalMinutes += duration;
+
+    if (totalMinutes > 12 * 60) {
+      return res.json({
+        success: false,
+        error: "Daily work limit exceeded (12 hours)"
+      });
+    }
+
+    // ❌ Overlap check
     for (const task of existing_tasks) {
-      // ✅ FIXED: use camelCase fields
-      const task_start = to_24_minutes(
-        task.startHour,
-        task.startMinute,
-        task.startPeriod
-      );
+      const task_start = task.totalStart;
+      const task_end = task.totalEnd;
 
-      const task_end = to_24_minutes(
-        task.endHour,
-        task.endMinute,
-        task.endPeriod
-      );
-
-      // Safety guard (prevents corrupt DB data crashes)
       if (Number.isNaN(task_start) || Number.isNaN(task_end)) {
-        console.error('Invalid task data:', task._id);
-        continue;
+        continue; // skip bad data safely
       }
 
       const is_overlap = !(
-        end_total + BUFFER <= task_start ||
-        start_total >= task_end + BUFFER
+        end_total <= task_start ||
+        start_total >= task_end
       );
 
       if (is_overlap) {
         return res.json({
           success: false,
-          error: 'Overlapping task (with buffer)',
+          error: `Conflicts with task ${task.startHour}:${String(task.startMinute).padStart(2, '0')} ${task.startPeriod} - ${task.endHour}:${String(task.endMinute).padStart(2, '0')} ${task.endPeriod}`,
           conflict: {
             start: `${task.startHour}:${String(task.startMinute).padStart(2, '0')} ${task.startPeriod}`,
             end: `${task.endHour}:${String(task.endMinute).padStart(2, '0')} ${task.endPeriod}`,
@@ -370,7 +413,7 @@ app.post('/add_task', authenticateToken, async (req, res) => {
       }
     }
 
-    // Save task
+    // 💾 Save
     const task_data = {
       username,
       company_id,
@@ -383,25 +426,23 @@ app.post('/add_task', authenticateToken, async (req, res) => {
       note,
       totalStart: start_total,
       totalEnd: end_total,
-      date: new Date(date)
+      date: task_date
     };
 
     await Task.create(task_data);
-
-    console.log('Task saved:', task_data);
 
     await Log.create({
       company_id,
       username,
       action: "create",
-      message: `Task added: ${note}`
+      message: `Task added: ${note || "No note"}`
     });
 
     res.json({ success: true });
 
   } catch (err) {
     console.error('Error saving task:', err);
-    res.json({
+    res.status(500).json({
       success: false,
       error: err.message || 'Failed to save task'
     });
@@ -864,14 +905,20 @@ app.post("/admin/work-trend", authenticateToken, async (req, res) => {
   try {
     const company_id = req.token.company_id;
 
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // end of today
+
     const last7Days = new Date();
-    last7Days.setDate(last7Days.getDate() - 7);
+    last7Days.setDate(last7Days.getDate() - 6); // include today = 7 days total
+    last7Days.setHours(0, 0, 0, 0); // start of day
 
     const tasks = await Task.find({
       company_id,
-      date: { $gte: last7Days }
+      date: {
+        $gte: last7Days,
+        $lte: today
+      }
     });
-
     const result = {};
 
     tasks.forEach(task => {
